@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studio 220 — Gallery Wall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --wall: #1a1410;
+    --text-dark: #e8dfd0;
+    --text-mid: #b0a08a;
+    --text-light: #7a6d5e;
+    --accent-rust: #c9a84c;
+  }
+
+  html {
+    overflow-y: hidden;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--text-light) var(--wall);
+  }
+
+  body {
+    height: 100vh;
+    overflow-y: hidden;
+    overflow-x: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--text-dark);
+    background: var(--wall);
+  }
+
+  /* Warm spotlight lighting */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 15% 30%, rgba(200,160,60,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 20%, rgba(200,160,60,0.05) 0%, transparent 40%),
+      radial-gradient(ellipse at 80% 35%, rgba(200,160,60,0.06) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  /* Fabric/velvet texture overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='5' seed='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 99;
+  }
+
+  /* The gallery wall - dark damask wallpaper */
+  .gallery-wall {
+    height: 100vh;
+    width: 140vw;
+    position: relative;
+    background-color: #000;
+    background-image: none;
+  }
+  /* Wallpaper as separate layer at 50% opacity on black */
+  .gallery-wall .wallpaper-bg {
+    position: absolute;
+    inset: 0;
+    background: url('./models/wallpaper.png') repeat;
+    background-size: 300px 300px;
+    opacity: 0.4;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* Crown molding - top (dark bronze) */
+  .molding-top {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 28px;
+    z-index: 200;
+    background:
+      linear-gradient(180deg,
+        #1a1410 0px,
+        #3a2a1c 2px,
+        #6b4e30 4px,
+        #8a6840 6px,
+        #5a3e24 8px,
+        #7a5c38 10px,
+        #4a3420 11px,
+        #6b4e30 13px,
+        #8a6840 14px,
+        #5a3e24 16px,
+        #6b4e30 17px,
+        #7a5c38 19px,
+        #4a3420 21px,
+        #5a3e24 23px,
+        #3a2a1c 25px,
+        #1a1410 28px
+      );
+    box-shadow:
+      0 2px 8px rgba(0,0,0,0.6),
+      0 4px 16px rgba(0,0,0,0.4),
+      inset 0 1px 0 rgba(160,120,60,0.2);
+    pointer-events: none;
+  }
+
+  /* Baseboard molding - bottom (dark bronze) */
+  .molding-bottom {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 32px;
+    z-index: 200;
+    background:
+      linear-gradient(0deg,
+        #1a1410 0px,
+        #2a1f14 2px,
+        #5a3e24 4px,
+        #7a5c38 6px,
+        #8a6840 8px,
+        #4a3420 10px,
+        #6b4e30 12px,
+        #5a3e24 14px,
+        #7a5c38 16px,
+        #4a3420 18px,
+        #6b4e30 20px,
+        #8a6840 22px,
+        #5a3e24 24px,
+        #6b4e30 26px,
+        #3a2a1c 28px,
+        #2a1f14 30px,
+        #1a1410 32px
+      );
+    box-shadow:
+      0 -2px 8px rgba(0,0,0,0.6),
+      0 -4px 16px rgba(0,0,0,0.4),
+      inset 0 -1px 0 rgba(160,120,60,0.15);
+    pointer-events: none;
+  }
+
+  .wall-title {
+    position: absolute;
+    top: 38px;
+    left: calc(25vw + 390px);
+    transform: translateX(-50%);
+    z-index: 50;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: 12px;
+    text-transform: uppercase;
+    background: linear-gradient(180deg, #e0c55a 0%, #c9a84c 40%, #a07828 60%, #d4b65e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.6));
+    white-space: nowrap;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  /* Scroll indicator */
+  .scroll-hint {
+    position: fixed;
+    bottom: 68px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-light);
+    z-index: 50;
+    transition: opacity 0.6s ease;
+    user-select: none;
+  }
+  .scroll-hint.faded { opacity: 0; }
+  .scroll-hint .arrow {
+    display: inline-block;
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  @keyframes scrollPulse {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(6px); }
+  }
+
+  /* --- FRAME PIECES --- */
+  .fp {
+    position: absolute;
+    cursor: grab;
+    transition: box-shadow 0.25s ease;
+    touch-action: none;
+    z-index: 1;
+  }
+  .fp:hover { z-index: 20; }
+  .fp.dragging {
+    cursor: grabbing;
+    z-index: 100 !important;
+    transition: none;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+
+  /* Frame shadow on wall */
+  .fp-shadow {
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    box-shadow:
+      4px 6px 20px rgba(0,0,0,0.5),
+      1px 2px 6px rgba(0,0,0,0.4);
+    z-index: -1;
+  }
+  .fr-gold-gaudy .fp-shadow { display: none; }
+
+  /* === FRAME TYPES === */
+
+  /* Ornate chunky gold */
+  .fr-gold {
+    padding: 16px;
+    background: linear-gradient(145deg, #d4b65e, #a07828, #c9a84c, #8a6e2a, #d4b65e);
+    border: 2px solid #7a6120;
+    box-shadow:
+      inset 0 0 0 3px #dcc06e,
+      inset 0 0 0 5px #8a6e2a,
+      inset 0 0 0 7px #c9a84c,
+      inset 0 0 0 8px rgba(0,0,0,0.2);
+  }
+
+  /* Thin elegant gold */
+  .fr-gold-thin {
+    padding: 6px;
+    background: linear-gradient(135deg, #c9a84c, #b89540, #d4b65e);
+    border: 1px solid #8a6e2a;
+    box-shadow: inset 0 0 0 1px #dcc06e;
+  }
+
+  /* Antique dark wood - chunky */
+  .fr-wood-dark {
+    padding: 14px;
+    background: linear-gradient(160deg, #3d2e1e, #2a1f14, #4a3828, #2a1f14);
+    border: 1px solid #1a1208;
+    box-shadow:
+      inset 0 0 0 2px #503a24,
+      inset 0 0 0 4px #2a1f14,
+      inset 0 0 0 5px rgba(0,0,0,0.3);
+  }
+
+  /* Warm natural wood */
+  .fr-wood-natural {
+    padding: 10px;
+    background: linear-gradient(155deg, #a88b64, #8b6f4e, #b89b72, #7a6040);
+    border: 1px solid #6b5535;
+    box-shadow:
+      inset 0 0 0 2px #c4a87a,
+      inset 0 0 0 3px #7a6040;
+  }
+
+  /* Thin black */
+  .fr-black {
+    padding: 4px;
+    background: #1a1a1a;
+    border: 1px solid #000;
+    box-shadow: inset 0 0 0 1px #333;
+  }
+
+  /* Thick matte black */
+  .fr-black-chunky {
+    padding: 12px;
+    background: #1a1a1a;
+    border: 1px solid #000;
+    box-shadow:
+      inset 0 0 0 2px #2a2a2a,
+      inset 0 0 0 4px #111;
+  }
+
+  /* Distressed vintage gold */
+  .fr-vintage-gold {
+    padding: 18px;
+    background: linear-gradient(140deg, #b89540, #8a6e2a, #a07828, #c9a84c, #7a6020, #b89540);
+    background-size: 200% 200%;
+    border: 2px solid #6b5520;
+    box-shadow:
+      inset 0 0 0 2px #c4a855,
+      inset 0 0 0 4px #7a6020,
+      inset 0 0 0 6px #a08030,
+      inset 0 0 0 8px rgba(0,0,0,0.25);
+  }
+
+  /* Ornate gold frame - uses real frame image */
+  .fr-gold-gaudy {
+    padding: 0;
+    position: relative;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+  .fr-gold-gaudy .frame-img-wrap {
+    position: relative;
+    display: block;
+  }
+  /* Frame image on TOP so it overlays the viewer */
+  .fr-gold-gaudy .frame-img-wrap img {
+    display: block;
+    width: 100%;
+    height: auto;
+    position: relative;
+    z-index: 2;
+    pointer-events: none;
+  }
+  /* Viewer sits behind the frame, visible through the transparent center */
+  .fr-gold-gaudy .frame-content {
+    position: absolute;
+    top: 16%;
+    left: 14%;
+    width: 72%;
+    height: 68%;
+    overflow: hidden;
+    z-index: 1;
+  }
+  .fr-gold-gaudy .frame-content .vw {
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: auto;
+  }
+
+  /* Rustic reclaimed wood */
+  .fr-wood-rustic {
+    padding: 12px;
+    background: linear-gradient(170deg, #7a6650, #5a4a38, #8b7560, #6a5a48, #7a6650);
+    border: 1px solid #4a3a28;
+    box-shadow:
+      inset 0 0 0 1px #8a7a64,
+      inset 0 0 0 3px #5a4a38;
+  }
+
+  /* === SHAPES === */
+  .shape-oval {
+    border-radius: 50%;
+  }
+  .shape-oval .fp-shadow { border-radius: 50%; }
+  .shape-oval .mat { border-radius: 50%; }
+  .shape-oval .vw { border-radius: 50%; overflow: hidden; }
+
+  .shape-arch {
+    border-radius: 50% 50% 4px 4px;
+  }
+  .shape-arch .fp-shadow { border-radius: 50% 50% 4px 4px; }
+  .shape-arch .mat { border-radius: 48% 48% 2px 2px; }
+  .shape-arch .vw { border-radius: 46% 46% 0 0; overflow: hidden; }
+
+  .shape-circle {
+    border-radius: 50%;
+  }
+  .shape-circle .fp-shadow { border-radius: 50%; }
+  .shape-circle .mat { border-radius: 50%; }
+  .shape-circle .vw { border-radius: 50%; overflow: hidden; }
+
+  /* Mat board */
+  .mat {
+    background: #f8f5ee;
+    padding: 14px;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
+  }
+  .mat-warm { background: #eee8db; }
+  .mat-narrow { padding: 8px; }
+
+  /* Viewer */
+  .vw {
+    width: 100%;
+    aspect-ratio: 1;
+    background: #f0ece4;
+    position: relative;
+  }
+  .vw canvas { width: 100% !important; height: 100% !important; display: block; }
+  .vw-tall { aspect-ratio: 3/4; }
+  .vw-squat { aspect-ratio: 5/4; }
+
+  /* --- LOADING --- */
+  #loading-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #1a1410;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    transition: opacity 0.8s ease;
+  }
+  #loading-overlay.hidden { opacity: 0; pointer-events: none; }
+  .loading-bar-track {
+    width: 140px; height: 1px;
+    background: #2a2018;
+  }
+  .loading-bar-fill {
+    height: 100%; background: var(--accent-rust);
+    width: 0%; transition: width 0.3s ease;
+  }
+  .loading-label {
+    margin-top: 16px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px;
+    font-style: italic;
+    color: var(--text-light);
+    letter-spacing: 2px;
+  }
+
+  /* --- MODAL --- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,8,5,0.9);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+    cursor: pointer;
+  }
+  .modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal-card {
+    display: flex;
+    gap: 36px;
+    align-items: center;
+    max-width: 800px;
+    width: 90vw;
+    cursor: default;
+    transform: translateY(20px);
+    transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1);
+  }
+  .modal-overlay.active .modal-card {
+    transform: translateY(0);
+  }
+
+  .modal-viewer-wrap {
+    flex-shrink: 0;
+    width: min(380px, 50vw);
+  }
+  .modal-viewer {
+    width: 100%;
+    aspect-ratio: 1;
+    background: #1a1512;
+    border: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+  }
+  .modal-viewer canvas { width: 100% !important; height: 100% !important; display: block; }
+
+  .modal-info { flex: 1; min-width: 0; }
+  .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--text-dark);
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+  .modal-divider {
+    width: 40px;
+    height: 1px;
+    background: var(--accent-rust);
+    margin-bottom: 14px;
+  }
+  .modal-notes {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    color: var(--text-mid);
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+  .modal-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-light);
+  }
+  .modal-close-hint {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-light);
+    opacity: 0;
+    transition: opacity 0.4s ease 0.3s;
+  }
+  .modal-overlay.active .modal-close-hint { opacity: 1; }
+
+  @media (max-width: 768px) {
+    html { overflow-y: auto; overflow-x: hidden; }
+    body { overflow-y: auto; overflow-x: hidden; height: auto; }
+    .gallery-wall {
+      width: 100%;
+      height: auto;
+      min-height: 200vh;
+      padding: 60px 12px 100px;
+    }
+    .fp {
+      position: relative !important;
+      top: auto !important; left: auto !important;
+      display: block;
+      margin: 20px auto;
+    }
+    .scroll-hint { display: none; }
+    .wall-title { position: relative; top: auto; left: auto; transform: none; text-align: center; margin-bottom: 20px; }
+    .modal-card { flex-direction: column; gap: 20px; }
+    .modal-viewer-wrap { width: 80vw; }
+    .modal-info { text-align: center; }
+    .modal-divider { margin: 0 auto 14px; }
+  }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+
+<div id="loading-overlay">
+  <div class="loading-bar-track">
+    <div class="loading-bar-fill" id="loading-bar"></div>
+  </div>
+  <div class="loading-label">preparing the gallery...</div>
+</div>
+
+<div class="molding-top"></div>
+<div class="molding-bottom"></div>
+
+<div class="scroll-hint" id="scroll-hint">
+  <span class="arrow" style="animation-direction: reverse;">&larr;</span> scroll to explore <span class="arrow">&rarr;</span>
+</div>
+
+<div class="gallery-wall" id="gallery-wall">
+  <div class="wallpaper-bg"></div>
+  <div class="wall-title">STUDIO 220</div>
+
+  <!-- ====== LEFT of room ====== -->
+
+  <div class="fp fr-gold-thin shape-oval" data-piece="0" style="top: 10vh; left: -22vw; width: 220px;">
+    <div class="fp-shadow"></div>
+    <div class="mat mat-narrow">
+      <div class="vw" id="v-01" style="width:165px; height:165px;"></div>
+    </div>
+  </div>
+
+  <div class="fp fr-wood-dark" data-piece="2" style="top: 3vh; left: -8vw; width: 270px;">
+    <div class="fp-shadow"></div>
+    <div class="mat">
+      <div class="vw vw-tall" id="v-02"></div>
+    </div>
+  </div>
+
+  <div class="fp fr-black-chunky shape-circle" data-piece="1" style="top: 48vh; left: -20vw; width: 200px;">
+    <div class="fp-shadow"></div>
+    <div class="mat mat-narrow">
+      <div class="vw" id="v-03" style="width:145px; height:145px;"></div>
+    </div>
+  </div>
+
+  <div class="fp fr-vintage-gold shape-arch" data-piece="0" style="top: 36vh; left: -7vw; width: 250px;">
+    <div class="fp-shadow"></div>
+    <div class="mat mat-warm">
+      <div class="vw vw-tall" id="v-04"></div>
+    </div>
+  </div>
+
+  <div class="fp fr-black" data-piece="2" style="top: 18vh; left: 10vw; width: 175px;">
+    <div class="fp-shadow"></div>
+    <div class="mat mat-narrow">
+      <div class="vw" id="v-05" style="width:145px; height:145px;"></div>
+    </div>
+  </div>
+
+  <div class="fp fr-wood-rustic" data-piece="1" style="top: 2vh; left: 12vw; width: 220px;">
+    <div class="fp-shadow"></div>
+    <div class="mat">
+      <div class="vw vw-squat" id="v-06"></div>
+    </div>
+  </div>
+
+  <div class="fp fr-wood-natural" data-piece="0" style="top: 64vh; left: 8vw; width: 195px;">
+    <div class="fp-shadow"></div>
+    <div class="mat mat-narrow mat-warm">
+      <div class="vw" id="v-08" style="width:150px; height:150px;"></div>
+    </div>
+  </div>
+
+  <!-- ====== CENTER: the room ====== -->
+
+  <div class="fp fr-gold shape-oval" data-piece="2" style="top: 60vh; left: 17vw; width: 185px;">
+    <div class="fp-shadow"></div>
+    <div class="mat mat-narrow">
+      <div class="vw" id="v-07" style="width:130px; height:130px;"></div>
+    </div>
+  </div>
+
+  <!-- === THE ROOM === -->
+  <div class="fp fr-gold-gaudy" data-piece="3" style="top: 8vh; left: 25vw; width: 780px;">
+    <div class="fp-shadow"></div>
+    <div class="frame-img-wrap">
+      <img src="./models/ornate-frame.png" alt="frame" draggable="false">
+      <div class="frame-content">
+        <div class="vw" id="v-room"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fp fr-black-chunky shape-arch" data-piece="1" style="top: 62vh; left: 30vw; width: 210px;">
+    <div class="fp-shadow"></div>
+    <div class="mat mat-narrow">
+      <div class="vw vw-tall" id="v-09"></div>
+    </div>
+  </div>
+
+  <div class="fp fr-gold-thin shape-circle" data-piece="2" style="top: 68vh; left: 50vw; width: 155px;">
+    <div class="fp-shadow"></div>
+    <div class="mat mat-narrow">
+      <div class="vw" id="v-10" style="width:110px; height:110px;"></div>
+    </div>
+  </div>
+
+  <!-- ====== RIGHT of room ====== -->
+
+  <div class="fp fr-vintage-gold" data-piece="0" style="top: 4vh; left: 70vw; width: 280px;">
+    <div class="fp-shadow"></div>
+    <div class="mat">
+      <div class="vw" id="v-11"></div>
+    </div>
+  </div>
+
+  <div class="fp fr-wood-natural" data-piece="2" style="top: 6vh; left: 88vw; width: 300px;">
+    <div class="fp-shadow"></div>
+    <div class="mat mat-warm">
+      <div class="vw vw-squat" id="v-12"></div>
+    </div>
+  </div>
+
+  <div class="fp fr-black" data-piece="1" style="top: 30vh; left: 72vw; width: 210px;">
+    <div class="fp-shadow"></div>
+    <div class="mat mat-narrow">
+      <div class="vw vw-tall" id="v-13"></div>
+    </div>
+  </div>
+
+  <div class="fp fr-wood-dark shape-oval" data-piece="2" style="top: 28vh; left: 90vw; width: 280px;">
+    <div class="fp-shadow"></div>
+    <div class="mat">
+      <div class="vw" id="v-14" style="width:210px; height:210px;"></div>
+    </div>
+  </div>
+
+  <div class="fp fr-gold" data-piece="0" style="top: 54vh; left: 80vw; width: 210px;">
+    <div class="fp-shadow"></div>
+    <div class="mat mat-narrow">
+      <div class="vw" id="v-15" style="width:160px; height:160px;"></div>
+    </div>
+  </div>
+
+  <div class="fp fr-wood-rustic shape-arch" data-piece="1" style="top: 2vh; left: 112vw; width: 230px;">
+    <div class="fp-shadow"></div>
+    <div class="mat">
+      <div class="vw vw-tall" id="v-16"></div>
+    </div>
+  </div>
+
+  <div class="fp fr-black-chunky" data-piece="0" style="top: 34vh; left: 114vw; width: 250px;">
+    <div class="fp-shadow"></div>
+    <div class="mat mat-warm">
+      <div class="vw vw-squat" id="v-17"></div>
+    </div>
+  </div>
+
+  <div class="fp fr-gold-thin shape-circle" data-piece="2" style="top: 60vh; left: 110vw; width: 175px;">
+    <div class="fp-shadow"></div>
+    <div class="mat mat-narrow">
+      <div class="vw" id="v-18" style="width:125px; height:125px;"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal for objects -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-card" id="modal-card">
+    <div class="modal-viewer-wrap">
+      <div class="modal-viewer" id="modal-viewer"></div>
+    </div>
+    <div class="modal-info">
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-divider"></div>
+      <div class="modal-notes" id="modal-notes"></div>
+      <div class="modal-meta" id="modal-meta"></div>
+    </div>
+  </div>
+  <div class="modal-close-hint">click anywhere or press esc to close</div>
+</div>
+
+<!-- Room-specific wide modal -->
+<div class="modal-overlay" id="room-modal-overlay">
+  <div style="width: min(90vw, 1200px); cursor: default;">
+    <div class="modal-viewer" id="room-modal-viewer" style="width:100%; aspect-ratio:16/9;"></div>
+  </div>
+  <div class="modal-close-hint">click anywhere or press esc to close</div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const gltfLoader = new GLTFLoader();
+const bar = document.getElementById('loading-bar');
+
+const pieces = [
+  { id: 'statue', model: './models/bravo-statue.glb', label: 'bravo!!', notes: 'Little statue of Bravo. Lived on the shelf by the window.', meta: 'OBJ-001 / mixed media / intact', targetSize: 1.4, autoRotateSpeed: 0.8 },
+  { id: 'mug', model: './models/mug.glb', label: 'the mug', notes: 'Daily coffee mug. Still using this one.', meta: 'OBJ-002 / ceramic / daily use', targetSize: 1.4, autoRotateSpeed: 1.0 },
+  { id: 'flowers', model: './models/flowers.glb', label: 'dried flowers', notes: 'Dried arrangement from the dresser. Not sure what kind.', meta: 'OBJ-003 / botanical / desiccated', targetSize: 1.4, autoRotateSpeed: 0.6 },
+  { id: 'room', model: './models/2_23_2026.glb', label: 'Studio 220', notes: 'Full room scan taken the day before moving out. February 23, 2026.', meta: 'ROOM-001 / photogrammetry / complete scan', targetSize: 2.0, autoRotateSpeed: 0.3 }
+];
+
+const modelCache = new Map();
+let modelsLoaded = 0;
+
+const viewerConfigs = [
+  { id: 'v-01', piece: 0, speed: 0.8 },
+  { id: 'v-02', piece: 2, speed: 0.5 },
+  { id: 'v-03', piece: 1, speed: 1.0 },
+  { id: 'v-04', piece: 0, speed: 0.7 },
+  { id: 'v-05', piece: 2, speed: 0.9 },
+  { id: 'v-06', piece: 1, speed: 0.8 },
+  { id: 'v-07', piece: 2, speed: 0.6 },
+  { id: 'v-room', piece: 3, speed: 0.3, isRoom: true },
+  { id: 'v-08', piece: 0, speed: 1.1 },
+  { id: 'v-09', piece: 1, speed: 0.7 },
+  { id: 'v-10', piece: 2, speed: 0.5 },
+  { id: 'v-11', piece: 0, speed: 0.9 },
+  { id: 'v-12', piece: 2, speed: 0.6 },
+  { id: 'v-13', piece: 1, speed: 0.8 },
+  { id: 'v-14', piece: 2, speed: 0.4 },
+  { id: 'v-15', piece: 0, speed: 1.0 },
+  { id: 'v-16', piece: 1, speed: 0.7 },
+  { id: 'v-17', piece: 0, speed: 0.6 },
+  { id: 'v-18', piece: 2, speed: 0.8 },
+];
+
+const activeViewers = new Map(); // id -> { scene, camera, renderer, controls, container }
+
+function setupScene(container, cfg) {
+  const cachedScene = modelCache.get(cfg.piece);
+  if (!cachedScene) return null;
+
+  const rect = container.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0) return null;
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xf0ece4);
+
+  const model = cachedScene.clone();
+  scene.add(model);
+
+  scene.add(new THREE.AmbientLight(0xfff8ee, cfg.isRoom ? 1.0 : 0.8));
+  const keyLight = new THREE.DirectionalLight(0xfff5e0, cfg.isRoom ? 2.2 : 2.0);
+  keyLight.position.set(2, 3, 2);
+  scene.add(keyLight);
+  const fillLight = new THREE.DirectionalLight(0xffffff, cfg.isRoom ? 0.8 : 0.6);
+  fillLight.position.set(-2, 1, -1);
+  scene.add(fillLight);
+  if (cfg.isRoom) {
+    const backLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    backLight.position.set(0, 2, -3);
+    scene.add(backLight);
+  }
+
+  const camera = new THREE.PerspectiveCamera(45, rect.width / rect.height, 0.01, 100);
+  camera.position.set(0, 0.5, 2);
+
+  const isSmall = rect.width < 150;
+  const pr = isSmall ? 1 : Math.min(window.devicePixelRatio, 1.5);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: !isSmall, powerPreference: 'low-power' });
+  renderer.setSize(rect.width, rect.height);
+  renderer.setPixelRatio(pr);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = cfg.isRoom ? 1.3 : 1.2;
+  container.appendChild(renderer.domElement);
+
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = cfg.speed;
+  controls.enablePan = false;
+  if (!cfg.isRoom) {
+    controls.enableRotate = false;
+    controls.enableZoom = false;
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
+
+  return { scene, camera, renderer, controls, container };
+}
+
+function teardownViewer(id) {
+  const v = activeViewers.get(id);
+  if (!v) return;
+  v.controls.dispose();
+  v.renderer.dispose();
+  if (v.renderer.domElement.parentNode) {
+    v.renderer.domElement.parentNode.removeChild(v.renderer.domElement);
+  }
+  activeViewers.delete(id);
+}
+
+function preloadModels() {
+  const uniqueIndices = [0, 1, 2, 3];
+  uniqueIndices.forEach((pi) => {
+    const piece = pieces[pi];
+    gltfLoader.load(piece.model, (gltf) => {
+      const model = gltf.scene;
+      const box = new THREE.Box3().setFromObject(model);
+      const center = box.getCenter(new THREE.Vector3());
+      const size = box.getSize(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const scale = piece.targetSize / maxDim;
+      model.scale.setScalar(scale);
+      model.position.sub(center.multiplyScalar(scale));
+      modelCache.set(pi, model);
+
+      modelsLoaded++;
+      bar.style.width = (modelsLoaded / 4 * 100) + '%';
+      if (modelsLoaded === 4) {
+        setTimeout(() => {
+          document.getElementById('loading-overlay').classList.add('hidden');
+          initViewers();
+          scrollToRoom();
+        }, 300);
+      }
+    }, undefined, () => {
+      modelsLoaded++;
+      bar.style.width = (modelsLoaded / 4 * 100) + '%';
+      if (modelsLoaded === 4) {
+        setTimeout(() => {
+          document.getElementById('loading-overlay').classList.add('hidden');
+          initViewers();
+          scrollToRoom();
+        }, 300);
+      }
+    });
+  });
+}
+
+function initViewers() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const id = entry.target.id;
+      const cfg = viewerConfigs.find(c => c.id === id);
+      if (!cfg) return;
+
+      if (entry.isIntersecting && !activeViewers.has(id)) {
+        const viewer = setupScene(entry.target, cfg);
+        if (viewer) activeViewers.set(id, viewer);
+      } else if (!entry.isIntersecting && activeViewers.has(id)) {
+        teardownViewer(id);
+      }
+    });
+  }, {
+    root: null,
+    rootMargin: '200px',
+    threshold: 0
+  });
+
+  viewerConfigs.forEach(cfg => {
+    const el = document.getElementById(cfg.id);
+    if (el) observer.observe(el);
+  });
+}
+
+function globalAnimate() {
+  requestAnimationFrame(globalAnimate);
+  activeViewers.forEach((v) => {
+    v.controls.update();
+    v.renderer.render(v.scene, v.camera);
+  });
+}
+globalAnimate();
+
+preloadModels();
+
+let highestZ = 50;
+document.querySelectorAll('.fp').forEach(el => {
+  const isRoom = parseInt(el.dataset.piece) === 3;
+  let isDragging = false;
+  let dragMoved = false;
+  let dragStartX, dragStartY, elStartX, elStartY;
+
+  el.addEventListener('pointerdown', (e) => {
+    if (isRoom && e.target.tagName === 'CANVAS') return;
+
+    isDragging = true;
+    dragMoved = false;
+    el.classList.add('dragging');
+    highestZ++;
+    el.style.zIndex = highestZ;
+
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    elStartX = el.offsetLeft;
+    elStartY = el.offsetTop;
+
+    el.setPointerCapture(e.pointerId);
+    e.preventDefault();
+    e.stopPropagation();
+  });
+
+  el.addEventListener('pointermove', (e) => {
+    if (!isDragging) return;
+    const dx = e.clientX - dragStartX;
+    const dy = e.clientY - dragStartY;
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) dragMoved = true;
+    if (dragMoved) {
+      el.style.left = (elStartX + dx) + 'px';
+      el.style.top = (elStartY + dy) + 'px';
+    }
+  });
+
+  el.addEventListener('pointerup', (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+    el.classList.remove('dragging');
+    el.releasePointerCapture(e.pointerId);
+  });
+
+  el.addEventListener('dblclick', () => {
+    const idx = parseInt(el.dataset.piece);
+    if (idx === 3) {
+      openRoomModal(pieces[idx]);
+    } else {
+      openModal(pieces[idx]);
+    }
+  });
+});
+
+const overlay = document.getElementById('modal-overlay');
+const modalCard = document.getElementById('modal-card');
+const modalViewerEl = document.getElementById('modal-viewer');
+let modalViewer = null;
+
+function openModal(piece) {
+  document.getElementById('modal-title').textContent = piece.label;
+  document.getElementById('modal-notes').textContent = piece.notes;
+  document.getElementById('modal-meta').textContent = piece.meta;
+
+  if (modalViewer) {
+    modalViewer.controls.dispose();
+    modalViewer.renderer.dispose();
+    modalViewerEl.innerHTML = '';
+    modalViewer = null;
+  }
+
+  overlay.classList.add('active');
+
+  requestAnimationFrame(() => {
+    const pi = pieces.indexOf(piece);
+    const cached = modelCache.get(pi);
+    if (!cached) return;
+
+    const rect = modalViewerEl.getBoundingClientRect();
+    if (rect.width === 0) return;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xeee8db);
+    scene.add(cached.clone());
+    scene.add(new THREE.AmbientLight(0xfff8ee, 1.0));
+    const k = new THREE.DirectionalLight(0xfff5e0, 2.0);
+    k.position.set(2, 3, 2);
+    scene.add(k);
+    const f = new THREE.DirectionalLight(0xffffff, 0.8);
+    f.position.set(-2, 1, -1);
+    scene.add(f);
+    const b = new THREE.DirectionalLight(0xffffff, 0.4);
+    b.position.set(0, 2, -3);
+    scene.add(b);
+
+    const camera = new THREE.PerspectiveCamera(45, rect.width / rect.height, 0.01, 100);
+    camera.position.set(0, 0.5, 2);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(rect.width, rect.height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.3;
+    modalViewerEl.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = piece.autoRotateSpeed * 0.5;
+    controls.enablePan = false;
+
+    modalViewer = { scene, camera, renderer, controls };
+    activeViewers.set('__modal__', modalViewer);
+  });
+}
+
+function closeModal() {
+  overlay.classList.remove('active');
+  setTimeout(() => {
+    activeViewers.delete('__modal__');
+    if (modalViewer) {
+      modalViewer.controls.dispose();
+      modalViewer.renderer.dispose();
+      modalViewerEl.innerHTML = '';
+      modalViewer = null;
+    }
+  }, 400);
+}
+
+overlay.addEventListener('click', (e) => {
+  if (e.target === overlay) closeModal();
+});
+modalCard.addEventListener('click', (e) => e.stopPropagation());
+
+const roomOverlay = document.getElementById('room-modal-overlay');
+const roomModalViewerEl = document.getElementById('room-modal-viewer');
+let roomModalViewer = null;
+
+function openRoomModal(piece) {
+  if (roomModalViewer) {
+    roomModalViewer.controls.dispose();
+    roomModalViewer.renderer.dispose();
+    roomModalViewerEl.innerHTML = '';
+    roomModalViewer = null;
+  }
+
+  roomOverlay.classList.add('active');
+
+  requestAnimationFrame(() => {
+    const pi = pieces.indexOf(piece);
+    const cached = modelCache.get(pi);
+    if (!cached) return;
+
+    const rect = roomModalViewerEl.getBoundingClientRect();
+    if (rect.width === 0) return;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x1a1512);
+    scene.add(cached.clone());
+    scene.add(new THREE.AmbientLight(0xffffff, 1.0));
+    const k = new THREE.DirectionalLight(0xffffff, 2.2);
+    k.position.set(2, 3, 2);
+    scene.add(k);
+    const f = new THREE.DirectionalLight(0xffffff, 0.8);
+    f.position.set(-2, 1, -1);
+    scene.add(f);
+    const b = new THREE.DirectionalLight(0xffffff, 0.5);
+    b.position.set(0, 2, -3);
+    scene.add(b);
+
+    const camera = new THREE.PerspectiveCamera(45, rect.width / rect.height, 0.01, 100);
+    camera.position.set(0, 0.5, 2);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(rect.width, rect.height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.3;
+    roomModalViewerEl.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.3;
+    controls.enablePan = false;
+
+    roomModalViewer = { scene, camera, renderer, controls };
+    activeViewers.set('__room_modal__', roomModalViewer);
+  });
+}
+
+function closeRoomModal() {
+  roomOverlay.classList.remove('active');
+  setTimeout(() => {
+    activeViewers.delete('__room_modal__');
+    if (roomModalViewer) {
+      roomModalViewer.controls.dispose();
+      roomModalViewer.renderer.dispose();
+      roomModalViewerEl.innerHTML = '';
+      roomModalViewer = null;
+    }
+  }, 400);
+}
+
+roomOverlay.addEventListener('click', (e) => {
+  if (e.target === roomOverlay) closeRoomModal();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { closeModal(); closeRoomModal(); }
+});
+
+const scrollHint = document.getElementById('scroll-hint');
+let scrollFaded = false;
+
+// Center viewport on the room frame (left:25vw, width:780px)
+function scrollToRoom() {
+  const vw = window.innerWidth;
+  const roomCenter = 25 * vw / 100 + 390;
+  window.scrollTo({ left: roomCenter - vw / 2, behavior: 'auto' });
+}
+
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+scrollToRoom();
+window.addEventListener('load', () => { scrollToRoom(); });
+
+let initialCenterScroll = null;
+window.addEventListener('scroll', () => {
+  if (initialCenterScroll === null) {
+    const vw = window.innerWidth;
+    initialCenterScroll = 25 * vw / 100 + 390 - vw / 2;
+  }
+  if (!scrollFaded && Math.abs(window.scrollX - initialCenterScroll) > 80) {
+    scrollFaded = true;
+    scrollHint.classList.add('faded');
+  }
+}, { passive: true });
+
+document.addEventListener('wheel', (e) => {
+  if (window.innerWidth > 768) {
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      window.scrollBy({ left: e.deltaY, behavior: 'auto' });
+      e.preventDefault();
+    }
+  }
+}, { passive: false });
+</script>
+</body>
+</html>
