@@ -730,12 +730,16 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 const gltfLoader = new GLTFLoader();
 const bar = document.getElementById('loading-bar');
 
-const pieces = [
-  { id: 'statue', model: './models/bravo-statue.glb', label: 'bravo!!', notes: 'Little statue of Bravo. Lived on the shelf by the window.', meta: 'OBJ-001 / mixed media / intact', targetSize: 1.4, autoRotateSpeed: 0.8 },
-  { id: 'mug', model: './models/mug.glb', label: 'the mug', notes: 'Daily coffee mug. Still using this one.', meta: 'OBJ-002 / ceramic / daily use', targetSize: 1.4, autoRotateSpeed: 1.0 },
-  { id: 'flowers', model: './models/flowers.glb', label: 'dried flowers', notes: 'Dried arrangement from the dresser. Not sure what kind.', meta: 'OBJ-003 / botanical / desiccated', targetSize: 1.4, autoRotateSpeed: 0.6 },
-  { id: 'room', model: './models/2_23_2026.glb', label: 'Studio 220', notes: 'Full room scan taken the day before moving out. February 23, 2026.', meta: 'ROOM-001 / photogrammetry / complete scan', targetSize: 2.0, autoRotateSpeed: 0.3 }
-];
+let pieces = [];
+async function loadPieces() {
+  const res = await fetch('./pieces.json');
+  const data = await res.json();
+  pieces = data.map(p => ({
+    ...p,
+    meta: p.tags.join(' / ')
+  }));
+}
+await loadPieces();
 
 const modelCache = new Map();
 let modelsLoaded = 0;
