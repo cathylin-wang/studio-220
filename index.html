@@ -183,6 +183,25 @@
     user-select: none;
   }
   .scroll-hint.faded { opacity: 0; }
+
+  /* Edit link */
+  .edit-link {
+    position: fixed;
+    bottom: 42px;
+    right: 16px;
+    z-index: 300;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-light);
+    opacity: 0.4;
+    transition: opacity 0.3s ease;
+    text-decoration: none;
+  }
+  .edit-link:hover { opacity: 0.9; }
+  .edit-link svg { width: 15px; height: 15px; }
   .scroll-hint .arrow {
     display: inline-block;
     animation: scrollPulse 2s ease-in-out infinite;
@@ -541,6 +560,13 @@
   </div>
   <div class="loading-label">preparing the gallery...</div>
 </div>
+
+<a href="./spreadsheet.html" class="edit-link" title="Edit spreadsheet">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+    <path d="m15 5 4 4"/>
+  </svg>
+</a>
 
 <div class="molding-top"></div>
 <div class="molding-bottom"></div>
