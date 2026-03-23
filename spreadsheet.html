@@ -346,6 +346,72 @@
     z-index: 9999;
   }
 
+  /* Password gate */
+  .pw-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+  }
+  .pw-gate.hidden { display: none; }
+  .pw-card {
+    text-align: center;
+    padding: 48px 40px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .pw-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    background: linear-gradient(180deg, #e0c55a 0%, #c9a84c 40%, #a07828 60%, #d4b65e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  .pw-sub {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .pw-form {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+  .pw-input {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 10px 16px;
+    background: var(--cell-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    outline: none;
+    width: 200px;
+    transition: border-color 0.2s ease;
+  }
+  .pw-input:focus {
+    border-color: var(--gold-dim);
+  }
+  .pw-btn {
+    padding: 10px 20px;
+  }
+  .pw-error {
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: #c06050;
+    margin-top: 14px;
+    min-height: 16px;
+  }
+
   /* Back link */
   .back-link {
     font-size: 10px;
@@ -358,7 +424,21 @@
 </style>
 </head>
 <body>
-<div class="shell">
+
+<!-- Password gate -->
+<div class="pw-gate" id="pw-gate">
+  <div class="pw-card">
+    <div class="pw-title">Studio 220</div>
+    <div class="pw-sub">Enter password to edit catalog</div>
+    <form class="pw-form" id="pw-form">
+      <input type="password" class="pw-input" id="pw-input" placeholder="password" autocomplete="off" autofocus>
+      <button type="submit" class="btn btn-primary pw-btn">Enter</button>
+    </form>
+    <div class="pw-error" id="pw-error"></div>
+  </div>
+</div>
+
+<div class="shell" id="shell" style="display:none;">
   <div class="header">
     <div class="header-left">
       <div class="header-title">Studio 220</div>
@@ -397,6 +477,36 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// Password gate
+const CATALOG_PW = 'studio220';
+
+(function() {
+  const gate = document.getElementById('pw-gate');
+  const shell = document.getElementById('shell');
+  const form = document.getElementById('pw-form');
+  const input = document.getElementById('pw-input');
+  const error = document.getElementById('pw-error');
+
+  // Check if already authenticated this session
+  if (sessionStorage.getItem('studio220_auth') === '1') {
+    gate.classList.add('hidden');
+    shell.style.display = '';
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (input.value === CATALOG_PW) {
+      sessionStorage.setItem('studio220_auth', '1');
+      gate.classList.add('hidden');
+      shell.style.display = '';
+    } else {
+      error.textContent = 'incorrect password';
+      input.value = '';
+      input.focus();
+    }
+  });
+})();
+
 let data = [];
 const tbody = document.getElementById('table-body');
 
