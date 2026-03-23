@@ -757,7 +757,7 @@ const bar = document.getElementById('loading-bar');
 
 let pieces = [];
 async function loadPieces() {
-  const res = await fetch('./pieces.json');
+  const res = await fetch('/api/pieces');
   const data = await res.json();
   pieces = data.map(p => ({
     ...p,

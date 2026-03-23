@@ -402,7 +402,7 @@ const tbody = document.getElementById('table-body');
 
 // Load from pieces.json on disk
 async function loadData() {
-  const res = await fetch('./pieces.json?t=' + Date.now());
+  const res = await fetch('/api/pieces');
   data = await res.json();
   render();
 }
@@ -524,13 +524,13 @@ function escHTML(s) {
 
 async function saveData() {
   try {
-    const res = await fetch('/save-pieces', {
+    const res = await fetch('/api/pieces', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data, null, 2)
     });
     if (!res.ok) throw new Error('save failed');
-    showToast('saved to pieces.json');
+    showToast('saved');
   } catch (e) {
     showToast('error — is serve.py running?');
   }
