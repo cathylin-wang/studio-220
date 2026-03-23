@@ -183,6 +183,25 @@
     user-select: none;
   }
   .scroll-hint.faded { opacity: 0; }
+
+  /* Edit link */
+  .edit-link {
+    position: fixed;
+    bottom: 42px;
+    right: 16px;
+    z-index: 300;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-light);
+    opacity: 0.4;
+    transition: opacity 0.3s ease;
+    text-decoration: none;
+  }
+  .edit-link:hover { opacity: 0.9; }
+  .edit-link svg { width: 15px; height: 15px; stroke: currentColor; }
   .scroll-hint .arrow {
     display: inline-block;
     animation: scrollPulse 2s ease-in-out infinite;
@@ -541,6 +560,12 @@
   </div>
   <div class="loading-label">preparing the gallery...</div>
 </div>
+
+<a href="./spreadsheet.html" class="edit-link" title="Edit spreadsheet">
+  <i data-lucide="pencil" aria-hidden="true"></i>
+</a>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>lucide.createIcons();</script>
 
 <div class="molding-top"></div>
 <div class="molding-bottom"></div>
