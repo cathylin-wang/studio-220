@@ -1,0 +1,52 @@
+[
+  {
+    "id": "statue",
+    "model": "./models/bravo-statue.glb",
+    "label": "bravo!!",
+    "notes": "Blind box statue from China. Gifted to Sue when she got promoted. Broken by Mel after she said it was cute.",
+    "tags": [
+      "OBJ-001",
+      "gifted intact",
+      "now broken"
+    ],
+    "targetSize": 1.4,
+    "autoRotateSpeed": 0.8
+  },
+  {
+    "id": "mug",
+    "model": "./models/mug.glb",
+    "label": "the mug",
+    "notes": "Omegamart coffee mug gifted from Rachel when she moved out. Never used as a mug.",
+    "tags": [
+      "OBJ-002",
+      "decorative only",
+      "gift"
+    ],
+    "targetSize": 1.4,
+    "autoRotateSpeed": 1
+  },
+  {
+    "id": "flowers",
+    "model": "./models/flowers.glb",
+    "label": "flowers",
+    "notes": "The second bouquet of flowers Evan gave to me.",
+    "tags": [
+      "OBJ-003",
+      "gift"
+    ],
+    "targetSize": 1.4,
+    "autoRotateSpeed": 0.6
+  },
+  {
+    "id": "room",
+    "model": "./models/2_23_2026.glb",
+    "label": "Studio 220",
+    "notes": "Full room scan taken before moving out. February 23, 2026.",
+    "tags": [
+      "ROOM-001",
+      "photogrammetry"
+    ],
+    "targetSize": 2,
+    "autoRotateSpeed": 0.3
+  }
+]

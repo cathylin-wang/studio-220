@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studio 220 — Object Catalog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0c0a08;
+    --surface: #141210;
+    --surface-raised: #1a1714;
+    --border: #2a2520;
+    --border-focus: #c9a84c;
+    --text: #e8dfd0;
+    --text-mid: #b0a08a;
+    --text-dim: #6a5e50;
+    --gold: #c9a84c;
+    --gold-dim: #8a7030;
+    --cell-bg: #0f0d0b;
+    --cell-hover: #1e1a16;
+    --tag-bg: #1e1a14;
+    --tag-border: #3a3228;
+    --tag-text: #d4c4a0;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'IBM Plex Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+  }
+
+  /* Layout */
+  .shell {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  /* Header bar */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+  .header-left {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+  .header-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    background: linear-gradient(180deg, #e0c55a 0%, #c9a84c 40%, #a07828 60%, #d4b65e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header-sub {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .header-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 8px 18px;
+    border: 1px solid var(--border);
+    background: var(--surface-raised);
+    color: var(--text-mid);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .btn:hover {
+    border-color: var(--text-dim);
+    color: var(--text);
+  }
+  .btn-primary {
+    border-color: var(--gold-dim);
+    color: var(--gold);
+    background: rgba(201, 168, 76, 0.06);
+  }
+  .btn-primary:hover {
+    border-color: var(--gold);
+    background: rgba(201, 168, 76, 0.12);
+    color: #e0c55a;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(60px);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 10px 24px;
+    background: var(--surface-raised);
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(0.2, 0.9, 0.3, 1);
+    z-index: 100;
+    pointer-events: none;
+  }
+  .toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Table area */
+  .table-wrap {
+    flex: 1;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) var(--bg);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  /* Column widths */
+  col.col-idx { width: 48px; }
+  col.col-file { width: 220px; }
+  col.col-label { width: 180px; }
+  col.col-desc { width: auto; }
+  col.col-tags { width: 320px; }
+
+  thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  th {
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    text-align: left;
+    padding: 12px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    user-select: none;
+  }
+  th:first-child {
+    text-align: center;
+    color: var(--text-dim);
+  }
+
+  /* Rows */
+  tr { transition: background 0.15s ease; }
+  tbody tr:hover { background: rgba(201, 168, 76, 0.02); }
+
+  td {
+    padding: 0;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    height: 1px; /* trick so inner div can fill */
+  }
+
+  /* Index cell */
+  .cell-idx {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 56px;
+    font-size: 10px;
+    color: var(--text-dim);
+    padding: 16px 8px;
+    user-select: none;
+  }
+
+  /* File cell */
+  .cell-file {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    min-height: 56px;
+  }
+  .file-icon {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--border);
+    background: var(--surface-raised);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .file-name {
+    font-size: 11px;
+    color: var(--text);
+    word-break: break-all;
+    line-height: 1.4;
+  }
+  .file-name .ext {
+    color: var(--text-dim);
+  }
+
+  /* Editable cells */
+  .cell-edit {
+    width: 100%;
+    height: 100%;
+    min-height: 56px;
+    display: flex;
+  }
+  .cell-edit textarea,
+  .cell-edit input {
+    flex: 1;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--text);
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 16px;
+    resize: none;
+    transition: background 0.2s ease;
+  }
+  .cell-edit textarea:focus,
+  .cell-edit input:focus {
+    background: rgba(201, 168, 76, 0.03);
+    box-shadow: inset 2px 0 0 var(--gold-dim);
+  }
+  .cell-edit textarea::placeholder,
+  .cell-edit input::placeholder {
+    color: var(--text-dim);
+    opacity: 0.5;
+  }
+
+  /* Tags cell */
+  .cell-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 14px 16px;
+    min-height: 56px;
+  }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    padding: 4px 10px;
+    background: var(--tag-bg);
+    border: 1px solid var(--tag-border);
+    color: var(--tag-text);
+    cursor: default;
+    transition: all 0.15s ease;
+  }
+  .tag:hover {
+    border-color: var(--text-dim);
+  }
+  .tag .tag-x {
+    cursor: pointer;
+    color: var(--text-dim);
+    font-size: 12px;
+    line-height: 1;
+    transition: color 0.15s ease;
+  }
+  .tag .tag-x:hover {
+    color: #c06050;
+  }
+  .tag-add {
+    display: inline-flex;
+    align-items: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .tag-add:hover {
+    border-color: var(--gold-dim);
+    color: var(--gold);
+  }
+
+  /* Tag input inline */
+  .tag-input-wrap {
+    display: none;
+    align-items: center;
+  }
+  .tag-input-wrap.active { display: inline-flex; }
+  .tag-input {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 4px 8px;
+    background: var(--cell-bg);
+    border: 1px solid var(--gold-dim);
+    color: var(--text);
+    outline: none;
+    width: 120px;
+  }
+  .tag-input::placeholder {
+    color: var(--text-dim);
+    opacity: 0.5;
+  }
+
+  /* Subtle grain overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' seed='7' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23t)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* Back link */
+  .back-link {
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .back-link:hover { color: var(--gold); }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="header">
+    <div class="header-left">
+      <div class="header-title">Studio 220</div>
+      <div class="header-sub">Object Catalog</div>
+    </div>
+    <div class="header-actions">
+      <a href="index.html" class="btn">Gallery</a>
+      <button class="btn" onclick="exportJSON()">Export</button>
+      <button class="btn btn-primary" onclick="saveData()">Save</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <colgroup>
+        <col class="col-idx">
+        <col class="col-file">
+        <col class="col-label">
+        <col class="col-desc">
+        <col class="col-tags">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>File</th>
+          <th>Label</th>
+          <th>Description</th>
+          <th>Tags</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let data = [];
+const tbody = document.getElementById('table-body');
+
+// Load from pieces.json on disk
+async function loadData() {
+  const res = await fetch('./pieces.json?t=' + Date.now());
+  data = await res.json();
+  render();
+}
+loadData();
+
+function render() {
+  tbody.innerHTML = '';
+  data.forEach((item, i) => {
+    const tr = document.createElement('tr');
+
+    // Index
+    const tdIdx = document.createElement('td');
+    tdIdx.innerHTML = `<div class="cell-idx">${String(i + 1).padStart(2, '0')}</div>`;
+    tr.appendChild(tdIdx);
+
+    // File
+    const tdFile = document.createElement('td');
+    const ext = item.model.split('.').pop().toUpperCase();
+    const name = item.model.replace(/\.[^.]+$/, '');
+    tdFile.innerHTML = `
+      <div class="cell-file">
+        <div class="file-icon">${ext}</div>
+        <div class="file-name">${name}<span class="ext">.${item.model.split('.').pop()}</span></div>
+      </div>`;
+    tr.appendChild(tdFile);
+
+    // Label
+    const tdLabel = document.createElement('td');
+    tdLabel.innerHTML = `
+      <div class="cell-edit">
+        <input type="text" value="${escHTML(item.label)}" placeholder="label..." data-idx="${i}" data-field="label">
+      </div>`;
+    tr.appendChild(tdLabel);
+
+    // Description
+    const tdDesc = document.createElement('td');
+    tdDesc.innerHTML = `
+      <div class="cell-edit">
+        <textarea rows="2" placeholder="description..." data-idx="${i}" data-field="notes">${escHTML(item.notes)}</textarea>
+      </div>`;
+    tr.appendChild(tdDesc);
+
+    // Tags
+    const tdTags = document.createElement('td');
+    const tagsDiv = document.createElement('div');
+    tagsDiv.className = 'cell-tags';
+    tagsDiv.dataset.idx = i;
+
+    item.tags.forEach((tag, ti) => {
+      const span = document.createElement('span');
+      span.className = 'tag';
+      span.innerHTML = `${escHTML(tag)}<span class="tag-x" data-idx="${i}" data-ti="${ti}">&times;</span>`;
+      tagsDiv.appendChild(span);
+    });
+
+    const addBtn = document.createElement('button');
+    addBtn.className = 'tag-add';
+    addBtn.textContent = '+';
+    addBtn.dataset.idx = i;
+    tagsDiv.appendChild(addBtn);
+
+    const inputWrap = document.createElement('span');
+    inputWrap.className = 'tag-input-wrap';
+    inputWrap.innerHTML = `<input class="tag-input" type="text" placeholder="new tag..." data-idx="${i}">`;
+    tagsDiv.appendChild(inputWrap);
+
+    tdTags.appendChild(tagsDiv);
+    tr.appendChild(tdTags);
+
+    tbody.appendChild(tr);
+  });
+
+  // Bind events
+  tbody.querySelectorAll('input[data-field], textarea[data-field]').forEach(el => {
+    el.addEventListener('input', () => {
+      const idx = +el.dataset.idx;
+      data[idx][el.dataset.field] = el.value;
+    });
+  });
+
+  tbody.querySelectorAll('.tag-x').forEach(el => {
+    el.addEventListener('click', () => {
+      const idx = +el.dataset.idx;
+      const ti = +el.dataset.ti;
+      data[idx].tags.splice(ti, 1);
+      render();
+    });
+  });
+
+  tbody.querySelectorAll('.tag-add').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const wrap = btn.nextElementSibling;
+      wrap.classList.add('active');
+      btn.style.display = 'none';
+      wrap.querySelector('input').focus();
+    });
+  });
+
+  tbody.querySelectorAll('.tag-input').forEach(input => {
+    const commit = () => {
+      const val = input.value.trim();
+      if (val) {
+        const idx = +input.dataset.idx;
+        data[idx].tags.push(val);
+      }
+      render();
+    };
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); commit(); }
+      if (e.key === 'Escape') render();
+    });
+    input.addEventListener('blur', commit);
+  });
+}
+
+function escHTML(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function saveData() {
+  try {
+    const res = await fetch('/save-pieces', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data, null, 2)
+    });
+    if (!res.ok) throw new Error('save failed');
+    showToast('saved to pieces.json');
+  } catch (e) {
+    showToast('error — is serve.py running?');
+  }
+}
+
+function exportJSON() {
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'pieces.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('exported json');
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('visible');
+  setTimeout(() => el.classList.remove('visible'), 2000);
+}
+
+// Cmd+S / Ctrl+S to save
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+    e.preventDefault();
+    saveData();
+  }
+});
+</script>
+</body>
+</html>
