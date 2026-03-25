@@ -755,21 +755,22 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 const gltfLoader = new GLTFLoader();
 const bar = document.getElementById('loading-bar');
 
+const MODAL_KEY = '__modal__';
+const ROOM_MODAL_KEY = '__room_modal__';
+const ROOM_LEFT_VW = 0.25;
+const ROOM_FRAME_HALF_WIDTH = 390;
+
 let pieces = [];
 async function loadPieces() {
   const res = await fetch('./pieces.json');
-  const data = await res.json();
-  pieces = data.map(p => ({
-    ...p,
-    meta: p.tags.join(' / ')
-  }));
+  pieces = await res.json();
 }
 await loadPieces();
 
 const modelCache = new Map();
 let modelsLoaded = 0;
 
-const viewerConfigs = [
+const viewerConfigList = [
   { id: 'v-01', piece: 0, speed: 0.8 },
   { id: 'v-02', piece: 2, speed: 0.5 },
   { id: 'v-03', piece: 1, speed: 1.0 },
@@ -790,61 +791,65 @@ const viewerConfigs = [
   { id: 'v-17', piece: 0, speed: 0.6 },
   { id: 'v-18', piece: 2, speed: 0.8 },
 ];
+const viewerConfigMap = new Map(viewerConfigList.map(c => [c.id, c]));
 
-const activeViewers = new Map(); // id -> { scene, camera, renderer, controls, container }
+const activeViewers = new Map();
 
-function setupScene(container, cfg) {
-  const cachedScene = modelCache.get(cfg.piece);
-  if (!cachedScene) return null;
-
+// Shared viewer factory — used by gallery thumbnails, piece modal, and room modal.
+function createViewer(container, opts) {
+  const cached = modelCache.get(opts.piece);
+  if (!cached) return null;
   const rect = container.getBoundingClientRect();
   if (rect.width === 0 || rect.height === 0) return null;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xf0ece4);
+  scene.background = new THREE.Color(opts.bg ?? 0xf0ece4);
+  scene.add(cached.clone());
 
-  const model = cachedScene.clone();
-  scene.add(model);
-
-  scene.add(new THREE.AmbientLight(0xfff8ee, cfg.isRoom ? 1.0 : 0.8));
-  const keyLight = new THREE.DirectionalLight(0xfff5e0, cfg.isRoom ? 2.2 : 2.0);
-  keyLight.position.set(2, 3, 2);
-  scene.add(keyLight);
-  const fillLight = new THREE.DirectionalLight(0xffffff, cfg.isRoom ? 0.8 : 0.6);
-  fillLight.position.set(-2, 1, -1);
-  scene.add(fillLight);
-  if (cfg.isRoom) {
-    const backLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    backLight.position.set(0, 2, -3);
-    scene.add(backLight);
+  scene.add(new THREE.AmbientLight(opts.ambientColor ?? 0xfff8ee, opts.ambientIntensity ?? (opts.isRoom ? 1.0 : 0.8)));
+  const kl = new THREE.DirectionalLight(opts.keyColor ?? 0xfff5e0, opts.keyIntensity ?? (opts.isRoom ? 2.2 : 2.0));
+  kl.position.set(2, 3, 2);
+  scene.add(kl);
+  const fl = new THREE.DirectionalLight(opts.fillColor ?? 0xffffff, opts.fillIntensity ?? (opts.isRoom ? 0.8 : 0.6));
+  fl.position.set(-2, 1, -1);
+  scene.add(fl);
+  if (opts.isRoom || opts.backIntensity) {
+    const bl = new THREE.DirectionalLight(0xffffff, opts.backIntensity ?? 0.5);
+    bl.position.set(0, 2, -3);
+    scene.add(bl);
   }
 
   const camera = new THREE.PerspectiveCamera(45, rect.width / rect.height, 0.01, 100);
   camera.position.set(0, 0.5, 2);
 
   const isSmall = rect.width < 150;
-  const pr = isSmall ? 1 : Math.min(window.devicePixelRatio, 1.5);
-
-  const renderer = new THREE.WebGLRenderer({ antialias: !isSmall, powerPreference: 'low-power' });
+  const prCap = opts.prCap ?? (isSmall ? 1 : 1.5);
+  const renderer = new THREE.WebGLRenderer({
+    antialias: opts.antialias ?? !isSmall,
+    powerPreference: opts.lowPower === false ? 'default' : 'low-power',
+  });
   renderer.setSize(rect.width, rect.height);
-  renderer.setPixelRatio(pr);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, prCap));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = cfg.isRoom ? 1.3 : 1.2;
+  renderer.toneMappingExposure = opts.exposure ?? (opts.isRoom ? 1.3 : 1.2);
   container.appendChild(renderer.domElement);
 
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
   controls.autoRotate = true;
-  controls.autoRotateSpeed = cfg.speed;
+  controls.autoRotateSpeed = opts.speed ?? 0.5;
   controls.enablePan = false;
-  if (!cfg.isRoom) {
+  const interactive = opts.interactive ?? opts.isRoom;
+  if (!interactive) {
     controls.enableRotate = false;
     controls.enableZoom = false;
   }
 
-  controls.update();
-  renderer.render(scene, camera);
+  if (opts.initialRender !== false) {
+    controls.update();
+    renderer.render(scene, camera);
+  }
 
   return { scene, camera, renderer, controls, container };
 }
@@ -860,9 +865,21 @@ function teardownViewer(id) {
   activeViewers.delete(id);
 }
 
+function onModelSettled() {
+  modelsLoaded++;
+  bar.style.width = (modelsLoaded / 4 * 100) + '%';
+  if (modelsLoaded === 4) {
+    setTimeout(() => {
+      document.getElementById('loading-overlay').classList.add('hidden');
+      initViewers();
+      startAnimationLoop();
+      scrollToRoom();
+    }, 300);
+  }
+}
+
 function preloadModels() {
-  const uniqueIndices = [0, 1, 2, 3];
-  uniqueIndices.forEach((pi) => {
+  [0, 1, 2, 3].forEach((pi) => {
     const piece = pieces[pi];
     gltfLoader.load(piece.model, (gltf) => {
       const model = gltf.scene;
@@ -874,27 +891,8 @@ function preloadModels() {
       model.scale.setScalar(scale);
       model.position.sub(center.multiplyScalar(scale));
       modelCache.set(pi, model);
-
-      modelsLoaded++;
-      bar.style.width = (modelsLoaded / 4 * 100) + '%';
-      if (modelsLoaded === 4) {
-        setTimeout(() => {
-          document.getElementById('loading-overlay').classList.add('hidden');
-          initViewers();
-          scrollToRoom();
-        }, 300);
-      }
-    }, undefined, () => {
-      modelsLoaded++;
-      bar.style.width = (modelsLoaded / 4 * 100) + '%';
-      if (modelsLoaded === 4) {
-        setTimeout(() => {
-          document.getElementById('loading-overlay').classList.add('hidden');
-          initViewers();
-          scrollToRoom();
-        }, 300);
-      }
-    });
+      onModelSettled();
+    }, undefined, onModelSettled);
   });
 }
 
@@ -902,11 +900,11 @@ function initViewers() {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       const id = entry.target.id;
-      const cfg = viewerConfigs.find(c => c.id === id);
+      const cfg = viewerConfigMap.get(id);
       if (!cfg) return;
 
       if (entry.isIntersecting && !activeViewers.has(id)) {
-        const viewer = setupScene(entry.target, cfg);
+        const viewer = createViewer(entry.target, cfg);
         if (viewer) activeViewers.set(id, viewer);
       } else if (!entry.isIntersecting && activeViewers.has(id)) {
         teardownViewer(id);
@@ -918,20 +916,22 @@ function initViewers() {
     threshold: 0
   });
 
-  viewerConfigs.forEach(cfg => {
+  viewerConfigList.forEach(cfg => {
     const el = document.getElementById(cfg.id);
     if (el) observer.observe(el);
   });
 }
 
-function globalAnimate() {
-  requestAnimationFrame(globalAnimate);
-  activeViewers.forEach((v) => {
-    v.controls.update();
-    v.renderer.render(v.scene, v.camera);
-  });
+function startAnimationLoop() {
+  function animate() {
+    requestAnimationFrame(animate);
+    activeViewers.forEach((v) => {
+      v.controls.update();
+      v.renderer.render(v.scene, v.camera);
+    });
+  }
+  animate();
 }
-globalAnimate();
 
 preloadModels();
 
@@ -980,11 +980,11 @@ document.querySelectorAll('.fp').forEach(el => {
   });
 
   el.addEventListener('dblclick', () => {
-    const idx = parseInt(el.dataset.piece);
-    if (idx === 3) {
-      openRoomModal(pieces[idx]);
+    const pi = parseInt(el.dataset.piece);
+    if (pi === 3) {
+      openRoomModal(pi);
     } else {
-      openModal(pieces[idx]);
+      openModal(pi);
     }
   });
 });
@@ -994,153 +994,96 @@ const modalCard = document.getElementById('modal-card');
 const modalViewerEl = document.getElementById('modal-viewer');
 let modalViewer = null;
 
-function openModal(piece) {
+const roomOverlay = document.getElementById('room-modal-overlay');
+const roomModalViewerEl = document.getElementById('room-modal-viewer');
+let roomModalViewer = null;
+
+function disposeViewer(viewer, containerEl) {
+  if (!viewer) return;
+  viewer.controls.dispose();
+  viewer.renderer.dispose();
+  containerEl.innerHTML = '';
+}
+
+function openModal(pi) {
+  const piece = pieces[pi];
   document.getElementById('modal-title').textContent = piece.label;
   document.getElementById('modal-notes').textContent = piece.notes;
-  document.getElementById('modal-meta').textContent = piece.meta;
+  document.getElementById('modal-meta').textContent = piece.tags.join(' / ');
 
-  if (modalViewer) {
-    modalViewer.controls.dispose();
-    modalViewer.renderer.dispose();
-    modalViewerEl.innerHTML = '';
-    modalViewer = null;
-  }
-
+  disposeViewer(modalViewer, modalViewerEl);
+  modalViewer = null;
   overlay.classList.add('active');
 
   requestAnimationFrame(() => {
-    const pi = pieces.indexOf(piece);
-    const cached = modelCache.get(pi);
-    if (!cached) return;
-
-    const rect = modalViewerEl.getBoundingClientRect();
-    if (rect.width === 0) return;
-
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xeee8db);
-    scene.add(cached.clone());
-    scene.add(new THREE.AmbientLight(0xfff8ee, 1.0));
-    const k = new THREE.DirectionalLight(0xfff5e0, 2.0);
-    k.position.set(2, 3, 2);
-    scene.add(k);
-    const f = new THREE.DirectionalLight(0xffffff, 0.8);
-    f.position.set(-2, 1, -1);
-    scene.add(f);
-    const b = new THREE.DirectionalLight(0xffffff, 0.4);
-    b.position.set(0, 2, -3);
-    scene.add(b);
-
-    const camera = new THREE.PerspectiveCamera(45, rect.width / rect.height, 0.01, 100);
-    camera.position.set(0, 0.5, 2);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(rect.width, rect.height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.3;
-    modalViewerEl.appendChild(renderer.domElement);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.08;
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = piece.autoRotateSpeed * 0.5;
-    controls.enablePan = false;
-
-    modalViewer = { scene, camera, renderer, controls };
-    activeViewers.set('__modal__', modalViewer);
+    modalViewer = createViewer(modalViewerEl, {
+      piece: pi,
+      bg: 0xeee8db,
+      ambientIntensity: 1.0,
+      keyIntensity: 2.0,
+      fillIntensity: 0.8,
+      backIntensity: 0.4,
+      prCap: 2,
+      antialias: true,
+      lowPower: false,
+      exposure: 1.3,
+      speed: piece.autoRotateSpeed * 0.5,
+      interactive: true,
+      initialRender: false,
+    });
+    if (modalViewer) activeViewers.set(MODAL_KEY, modalViewer);
   });
 }
 
-function closeModal() {
-  overlay.classList.remove('active');
+function openRoomModal(pi) {
+  disposeViewer(roomModalViewer, roomModalViewerEl);
+  roomModalViewer = null;
+  roomOverlay.classList.add('active');
+
+  requestAnimationFrame(() => {
+    roomModalViewer = createViewer(roomModalViewerEl, {
+      piece: pi,
+      isRoom: true,
+      bg: 0x1a1512,
+      ambientColor: 0xffffff,
+      ambientIntensity: 1.0,
+      keyColor: 0xffffff,
+      keyIntensity: 2.2,
+      fillIntensity: 0.8,
+      backIntensity: 0.5,
+      prCap: 2,
+      antialias: true,
+      lowPower: false,
+      exposure: 1.3,
+      speed: 0.3,
+      interactive: true,
+      initialRender: false,
+    });
+    if (roomModalViewer) activeViewers.set(ROOM_MODAL_KEY, roomModalViewer);
+  });
+}
+
+function closeModalViewer(overlayEl, viewerKey, viewerRef, containerEl) {
+  overlayEl.classList.remove('active');
   setTimeout(() => {
-    activeViewers.delete('__modal__');
-    if (modalViewer) {
-      modalViewer.controls.dispose();
-      modalViewer.renderer.dispose();
-      modalViewerEl.innerHTML = '';
-      modalViewer = null;
-    }
+    activeViewers.delete(viewerKey);
+    disposeViewer(viewerRef, containerEl);
   }, 400);
+}
+
+function closeModal() {
+  closeModalViewer(overlay, MODAL_KEY, modalViewer, modalViewerEl);
+  modalViewer = null;
+}
+function closeRoomModal() {
+  closeModalViewer(roomOverlay, ROOM_MODAL_KEY, roomModalViewer, roomModalViewerEl);
+  roomModalViewer = null;
 }
 
 overlay.addEventListener('click', (e) => {
   if (e.target === overlay) closeModal();
 });
 modalCard.addEventListener('click', (e) => e.stopPropagation());
-
-const roomOverlay = document.getElementById('room-modal-overlay');
-const roomModalViewerEl = document.getElementById('room-modal-viewer');
-let roomModalViewer = null;
-
-function openRoomModal(piece) {
-  if (roomModalViewer) {
-    roomModalViewer.controls.dispose();
-    roomModalViewer.renderer.dispose();
-    roomModalViewerEl.innerHTML = '';
-    roomModalViewer = null;
-  }
-
-  roomOverlay.classList.add('active');
-
-  requestAnimationFrame(() => {
-    const pi = pieces.indexOf(piece);
-    const cached = modelCache.get(pi);
-    if (!cached) return;
-
-    const rect = roomModalViewerEl.getBoundingClientRect();
-    if (rect.width === 0) return;
-
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1a1512);
-    scene.add(cached.clone());
-    scene.add(new THREE.AmbientLight(0xffffff, 1.0));
-    const k = new THREE.DirectionalLight(0xffffff, 2.2);
-    k.position.set(2, 3, 2);
-    scene.add(k);
-    const f = new THREE.DirectionalLight(0xffffff, 0.8);
-    f.position.set(-2, 1, -1);
-    scene.add(f);
-    const b = new THREE.DirectionalLight(0xffffff, 0.5);
-    b.position.set(0, 2, -3);
-    scene.add(b);
-
-    const camera = new THREE.PerspectiveCamera(45, rect.width / rect.height, 0.01, 100);
-    camera.position.set(0, 0.5, 2);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(rect.width, rect.height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.3;
-    roomModalViewerEl.appendChild(renderer.domElement);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.08;
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.3;
-    controls.enablePan = false;
-
-    roomModalViewer = { scene, camera, renderer, controls };
-    activeViewers.set('__room_modal__', roomModalViewer);
-  });
-}
-
-function closeRoomModal() {
-  roomOverlay.classList.remove('active');
-  setTimeout(() => {
-    activeViewers.delete('__room_modal__');
-    if (roomModalViewer) {
-      roomModalViewer.controls.dispose();
-      roomModalViewer.renderer.dispose();
-      roomModalViewerEl.innerHTML = '';
-      roomModalViewer = null;
-    }
-  }, 400);
-}
-
 roomOverlay.addEventListener('click', (e) => {
   if (e.target === roomOverlay) closeRoomModal();
 });
@@ -1152,11 +1095,12 @@ document.addEventListener('keydown', (e) => {
 const scrollHint = document.getElementById('scroll-hint');
 let scrollFaded = false;
 
-// Center viewport on the room frame (left:25vw, width:780px)
+function roomCenterX() {
+  return window.innerWidth * ROOM_LEFT_VW + ROOM_FRAME_HALF_WIDTH;
+}
+
 function scrollToRoom() {
-  const vw = window.innerWidth;
-  const roomCenter = 25 * vw / 100 + 390;
-  window.scrollTo({ left: roomCenter - vw / 2, behavior: 'auto' });
+  window.scrollTo({ left: roomCenterX() - window.innerWidth / 2, behavior: 'auto' });
 }
 
 if ('scrollRestoration' in history) {
@@ -1168,8 +1112,7 @@ window.addEventListener('load', () => { scrollToRoom(); });
 let initialCenterScroll = null;
 window.addEventListener('scroll', () => {
   if (initialCenterScroll === null) {
-    const vw = window.innerWidth;
-    initialCenterScroll = 25 * vw / 100 + 390 - vw / 2;
+    initialCenterScroll = roomCenterX() - window.innerWidth / 2;
   }
   if (!scrollFaded && Math.abs(window.scrollX - initialCenterScroll) > 80) {
     scrollFaded = true;
