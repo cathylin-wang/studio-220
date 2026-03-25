@@ -184,6 +184,32 @@
   }
   .scroll-hint.faded { opacity: 0; }
 
+  /* Save button */
+  .save-btn {
+    position: fixed;
+    bottom: 42px;
+    left: 16px;
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-light);
+    background: rgba(26, 20, 16, 0.8);
+    border: 1px solid rgba(255,255,255,0.06);
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.3s ease, border-color 0.3s ease;
+  }
+  .save-btn:hover { opacity: 0.9; border-color: var(--accent-rust); }
+  .save-btn svg { width: 13px; height: 13px; stroke: currentColor; }
+  .save-btn.saving { opacity: 0.9; color: var(--accent-rust); pointer-events: none; }
+  .save-btn.saved { opacity: 0.9; color: #7a9a5a; }
+
   /* Edit link */
   .edit-link {
     position: fixed;
@@ -560,6 +586,11 @@
   </div>
   <div class="loading-label">preparing the gallery...</div>
 </div>
+
+<button class="save-btn" id="save-btn" title="Save frame layout">
+  <i data-lucide="save" aria-hidden="true"></i>
+  <span id="save-label">save</span>
+</button>
 
 <a href="./spreadsheet.html" class="edit-link" title="Edit spreadsheet">
   <i data-lucide="pencil" aria-hidden="true"></i>
@@ -1128,6 +1159,92 @@ document.addEventListener('wheel', (e) => {
     }
   }
 }, { passive: false });
+
+// --- User identity & layout save/load ---
+
+function getUser() {
+  let user = localStorage.getItem('studio220_user');
+  if (!user) {
+    user = prompt('Enter your name to save/load your layout:');
+    if (user) {
+      user = user.trim().toLowerCase();
+      localStorage.setItem('studio220_user', user);
+    }
+  }
+  return user;
+}
+
+function gatherPositions() {
+  const positions = [];
+  document.querySelectorAll('.fp').forEach((el, i) => {
+    positions.push({
+      index: i,
+      left: el.style.left,
+      top: el.style.top,
+      zIndex: el.style.zIndex || '',
+    });
+  });
+  return positions;
+}
+
+function applyPositions(positions) {
+  const frames = document.querySelectorAll('.fp');
+  positions.forEach(p => {
+    const el = frames[p.index];
+    if (!el) return;
+    if (p.left) el.style.left = p.left;
+    if (p.top) el.style.top = p.top;
+    if (p.zIndex) el.style.zIndex = p.zIndex;
+  });
+}
+
+async function loadLayout() {
+  const user = getUser();
+  if (!user) return;
+  try {
+    const res = await fetch('/api/layout?user=' + encodeURIComponent(user));
+    const data = await res.json();
+    if (data.positions) applyPositions(data.positions);
+  } catch (e) {
+    console.warn('Could not load layout:', e);
+  }
+}
+
+async function saveLayout() {
+  const user = getUser();
+  if (!user) return;
+  const btn = document.getElementById('save-btn');
+  const label = document.getElementById('save-label');
+  btn.classList.add('saving');
+  label.textContent = 'saving…';
+  try {
+    const res = await fetch('/api/layout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user, positions: gatherPositions() }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      btn.classList.remove('saving');
+      btn.classList.add('saved');
+      label.textContent = 'saved';
+      setTimeout(() => {
+        btn.classList.remove('saved');
+        label.textContent = 'save';
+      }, 2000);
+    } else {
+      throw new Error(data.error || 'save failed');
+    }
+  } catch (e) {
+    console.error('Save failed:', e);
+    btn.classList.remove('saving');
+    label.textContent = 'error';
+    setTimeout(() => { label.textContent = 'save'; }, 2000);
+  }
+}
+
+document.getElementById('save-btn').addEventListener('click', saveLayout);
+loadLayout();
 </script>
 </body>
 </html>
