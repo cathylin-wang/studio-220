@@ -523,23 +523,20 @@ function render() {
   data.forEach((item, i) => {
     const tr = document.createElement('tr');
 
-    // Index
     const tdIdx = document.createElement('td');
     tdIdx.innerHTML = `<div class="cell-idx">${String(i + 1).padStart(2, '0')}</div>`;
     tr.appendChild(tdIdx);
 
-    // File
     const tdFile = document.createElement('td');
-    const ext = item.model.split('.').pop().toUpperCase();
+    const ext = item.model.split('.').pop();
     const name = item.model.replace(/\.[^.]+$/, '');
     tdFile.innerHTML = `
       <div class="cell-file">
-        <div class="file-icon">${ext}</div>
-        <div class="file-name">${name}<span class="ext">.${item.model.split('.').pop()}</span></div>
+        <div class="file-icon">${ext.toUpperCase()}</div>
+        <div class="file-name">${name}<span class="ext">.${ext}</span></div>
       </div>`;
     tr.appendChild(tdFile);
 
-    // Label
     const tdLabel = document.createElement('td');
     tdLabel.innerHTML = `
       <div class="cell-edit">
@@ -547,7 +544,6 @@ function render() {
       </div>`;
     tr.appendChild(tdLabel);
 
-    // Description
     const tdDesc = document.createElement('td');
     tdDesc.innerHTML = `
       <div class="cell-edit">
@@ -555,7 +551,6 @@ function render() {
       </div>`;
     tr.appendChild(tdDesc);
 
-    // Tags
     const tdTags = document.createElement('td');
     const tagsDiv = document.createElement('div');
     tagsDiv.className = 'cell-tags';
@@ -585,7 +580,6 @@ function render() {
     tbody.appendChild(tr);
   });
 
-  // Bind events
   tbody.querySelectorAll('input[data-field], textarea[data-field]').forEach(el => {
     el.addEventListener('input', () => {
       const idx = +el.dataset.idx;
@@ -612,17 +606,25 @@ function render() {
   });
 
   tbody.querySelectorAll('.tag-input').forEach(input => {
+    const dismiss = () => {
+      input.value = '';
+      input.parentElement.classList.remove('active');
+      const addBtn = input.parentElement.previousElementSibling;
+      if (addBtn) addBtn.style.display = '';
+    };
     const commit = () => {
       const val = input.value.trim();
       if (val) {
         const idx = +input.dataset.idx;
         data[idx].tags.push(val);
+        render();
+      } else {
+        dismiss();
       }
-      render();
     };
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') { e.preventDefault(); commit(); }
-      if (e.key === 'Escape') render();
+      if (e.key === 'Escape') dismiss();
     });
     input.addEventListener('blur', commit);
   });
