@@ -346,7 +346,6 @@
     z-index: 9999;
   }
 
-  /* Password gate */
   .pw-gate {
     position: fixed;
     inset: 0;
@@ -356,30 +355,18 @@
     justify-content: center;
     background: var(--bg);
   }
-  .pw-gate.hidden { display: none; }
+  .hidden { display: none; }
   .pw-card {
     text-align: center;
     padding: 48px 40px;
     border: 1px solid var(--border);
     background: var(--surface);
   }
-  .pw-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-weight: 600;
+  .pw-gate .header-title {
     font-size: 18px;
-    letter-spacing: 8px;
-    text-transform: uppercase;
-    background: linear-gradient(180deg, #e0c55a 0%, #c9a84c 40%, #a07828 60%, #d4b65e 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
     margin-bottom: 8px;
   }
-  .pw-sub {
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    color: var(--text-dim);
-    text-transform: uppercase;
+  .pw-gate .header-sub {
     margin-bottom: 28px;
   }
   .pw-form {
@@ -425,11 +412,10 @@
 </head>
 <body>
 
-<!-- Password gate -->
 <div class="pw-gate" id="pw-gate">
   <div class="pw-card">
-    <div class="pw-title">Studio 220</div>
-    <div class="pw-sub">Enter password to edit catalog</div>
+    <div class="header-title">Studio 220</div>
+    <div class="header-sub">Enter password to edit catalog</div>
     <form class="pw-form" id="pw-form">
       <input type="password" class="pw-input" id="pw-input" placeholder="password" autocomplete="off" autofocus>
       <button type="submit" class="btn btn-primary pw-btn">Enter</button>
@@ -438,7 +424,7 @@
   </div>
 </div>
 
-<div class="shell" id="shell" style="display:none;">
+<div class="shell hidden" id="shell">
   <div class="header">
     <div class="header-left">
       <div class="header-title">Studio 220</div>
@@ -477,7 +463,6 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// Password gate
 const CATALOG_PW = 'studio220';
 
 (function() {
@@ -487,10 +472,9 @@ const CATALOG_PW = 'studio220';
   const input = document.getElementById('pw-input');
   const error = document.getElementById('pw-error');
 
-  // Check if already authenticated this session
   if (sessionStorage.getItem('studio220_auth') === '1') {
     gate.classList.add('hidden');
-    shell.style.display = '';
+    shell.classList.remove('hidden');
   }
 
   form.addEventListener('submit', (e) => {
@@ -498,7 +482,7 @@ const CATALOG_PW = 'studio220';
     if (input.value === CATALOG_PW) {
       sessionStorage.setItem('studio220_auth', '1');
       gate.classList.add('hidden');
-      shell.style.display = '';
+      shell.classList.remove('hidden');
     } else {
       error.textContent = 'incorrect password';
       input.value = '';
