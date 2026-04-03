@@ -8,6 +8,9 @@ import ssl
 import subprocess
 import sys
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
+
+import psycopg2
 
 PORT = int(os.environ.get("PORT", 8000))
 HTTPS_PORT = 8443
