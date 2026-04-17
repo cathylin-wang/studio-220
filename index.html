@@ -187,8 +187,8 @@
   /* Bottom-right icon buttons */
   .toolbar {
     position: fixed;
-    bottom: 42px;
-    right: 16px;
+    bottom: 28px;
+    right: 20px;
     z-index: 300;
     display: flex;
     align-items: center;
@@ -220,14 +220,28 @@
     height: 28px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    color: var(--text-light);
-    opacity: 0.4;
-    transition: opacity 0.3s ease;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(12, 10, 8, 0.75);
+    border: 1px solid rgba(201, 168, 76, 0.25);
+    color: var(--text-mid);
+    opacity: 0.6;
+    transition: opacity 0.3s ease, border-color 0.3s ease, color 0.3s ease, background 0.3s ease;
     text-decoration: none;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
   }
-  .edit-link:hover { opacity: 0.9; }
-  .edit-link svg { width: 15px; height: 15px; stroke: currentColor; }
+  .edit-link:hover {
+    opacity: 1;
+    border-color: var(--accent-rust);
+    color: var(--accent-rust);
+    background: rgba(12, 10, 8, 0.9);
+  }
+  .edit-link svg { width: 14px; height: 14px; stroke: currentColor; }
   .scroll-hint .arrow {
     display: inline-block;
     animation: scrollPulse 2s ease-in-out infinite;

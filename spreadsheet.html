@@ -346,6 +346,59 @@
     z-index: 9999;
   }
 
+  .pw-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+  }
+  .hidden { display: none; }
+  .pw-card {
+    text-align: center;
+    padding: 48px 40px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .pw-gate .header-title {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+  .pw-gate .header-sub {
+    margin-bottom: 28px;
+  }
+  .pw-form {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+  .pw-input {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 10px 16px;
+    background: var(--cell-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    outline: none;
+    width: 200px;
+    transition: border-color 0.2s ease;
+  }
+  .pw-input:focus {
+    border-color: var(--gold-dim);
+  }
+  .pw-btn {
+    padding: 10px 20px;
+  }
+  .pw-error {
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: #c06050;
+    margin-top: 14px;
+    min-height: 16px;
+  }
+
   /* Back link */
   .back-link {
     font-size: 10px;
@@ -358,7 +411,20 @@
 </style>
 </head>
 <body>
-<div class="shell">
+
+<div class="pw-gate" id="pw-gate">
+  <div class="pw-card">
+    <div class="header-title">Studio 220</div>
+    <div class="header-sub">Enter password to edit catalog</div>
+    <form class="pw-form" id="pw-form">
+      <input type="password" class="pw-input" id="pw-input" placeholder="password" autocomplete="off" autofocus>
+      <button type="submit" class="btn btn-primary pw-btn">Enter</button>
+    </form>
+    <div class="pw-error" id="pw-error"></div>
+  </div>
+</div>
+
+<div class="shell hidden" id="shell">
   <div class="header">
     <div class="header-left">
       <div class="header-title">Studio 220</div>
@@ -397,6 +463,34 @@
 <div class="toast" id="toast"></div>
 
 <script>
+const CATALOG_PW = 'studio220';
+
+(function() {
+  const gate = document.getElementById('pw-gate');
+  const shell = document.getElementById('shell');
+  const form = document.getElementById('pw-form');
+  const input = document.getElementById('pw-input');
+  const error = document.getElementById('pw-error');
+
+  if (sessionStorage.getItem('studio220_auth') === '1') {
+    gate.classList.add('hidden');
+    shell.classList.remove('hidden');
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (input.value === CATALOG_PW) {
+      sessionStorage.setItem('studio220_auth', '1');
+      gate.classList.add('hidden');
+      shell.classList.remove('hidden');
+    } else {
+      error.textContent = 'incorrect password';
+      input.value = '';
+      input.focus();
+    }
+  });
+})();
+
 let data = [];
 const tbody = document.getElementById('table-body');
 
