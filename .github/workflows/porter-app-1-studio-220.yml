@@ -20,8 +20,8 @@ jobs:
               env:
                 PORTER_APP_NAME: studio-220
                 PORTER_CLUSTER: "1"
-                PORTER_DEPLOYMENT_TARGET_ID: 68645357-f766-46ce-bbed-e16689fbaeb3
+                PORTER_DEPLOYMENT_TARGET_ID: ebb535b0-e344-4d94-bb9e-ea0a8c460d01
                 PORTER_HOST: https://cathy.withporter.run
                 PORTER_PROJECT: "1"
                 PORTER_TAG: ${{ steps.vars.outputs.sha_short }}
-                PORTER_TOKEN: ${{ secrets.PORTER_APP_1_1183349950 }}
+                PORTER_TOKEN: ${{ secrets.PORTER_APP_1_1 }}
