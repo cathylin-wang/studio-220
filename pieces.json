@@ -38,6 +38,28 @@
     "autoRotateSpeed": 0.6
   },
   {
+    "id": "kangaroo",
+    "model": "./models/kangaroo.glb",
+    "label": "kangaroo",
+    "notes": "",
+    "tags": [
+      "OBJ-004"
+    ],
+    "targetSize": 1.4,
+    "autoRotateSpeed": 0.8
+  },
+  {
+    "id": "converse",
+    "model": "./models/converse.glb",
+    "label": "converse",
+    "notes": "",
+    "tags": [
+      "OBJ-005"
+    ],
+    "targetSize": 1.4,
+    "autoRotateSpeed": 0.8
+  },
+  {
     "id": "room",
     "model": "./models/2_23_2026.glb",
     "label": "Studio 220",
