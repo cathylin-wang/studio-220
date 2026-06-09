@@ -1,7 +1,7 @@
 "on":
     push:
         branches:
-            - main
+            - https
 name: Deploy to studio-220
 jobs:
     porter-deploy:
@@ -20,8 +20,8 @@ jobs:
               env:
                 PORTER_APP_NAME: studio-220
                 PORTER_CLUSTER: "1"
-                PORTER_DEPLOYMENT_TARGET_ID: edcc51ff-e77d-42ab-ade5-df3e5157e018
+                PORTER_DEPLOYMENT_TARGET_ID: 8318be2f-a54e-4c2a-bb18-088b6c1c5e32
                 PORTER_HOST: https://cathy.withporter.run
                 PORTER_PROJECT: "1"
                 PORTER_TAG: ${{ steps.vars.outputs.sha_short }}
-                PORTER_TOKEN: ${{ secrets.PORTER_APP_1_1183349950 }}
+                PORTER_TOKEN: ${{ secrets.PORTER_APP_1_1 }}
