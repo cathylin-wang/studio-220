@@ -85,6 +85,10 @@ class Handler(SimpleHTTPRequestHandler):
                     self._json_response(200, {'positions': None})
             except Exception as e:
                 self._json_response(500, {'error': str(e)})
+        elif any(part.startswith('.') for part in parsed.path.split('/')):
+            # Never serve dotfiles (e.g. /.git/*)
+            self.send_response(404)
+            self.end_headers()
         else:
             super().do_GET()
 
