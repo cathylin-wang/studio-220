@@ -684,7 +684,7 @@
   </div>
 
   <!-- === THE ROOM === -->
-  <div class="fp fr-gold-gaudy" data-piece="3" style="top: 8vh; left: 25vw; width: 780px;">
+  <div class="fp fr-gold-gaudy" data-piece="room" style="top: 8vh; left: 25vw; width: 780px;">
     <div class="fp-shadow"></div>
     <div class="frame-img-wrap">
       <img src="./models/ornate-frame.png" alt="frame" draggable="false">
@@ -806,9 +806,11 @@ const ROOM_LEFT_VW = 0.25;
 const ROOM_FRAME_HALF_WIDTH = 390;
 
 let pieces = [];
+let roomIndex = -1;
 async function loadPieces() {
   const res = await fetch('./pieces.json');
   pieces = await res.json();
+  roomIndex = pieces.findIndex(p => p.id === 'room');
 }
 await loadPieces();
 
@@ -823,7 +825,7 @@ const viewerConfigList = [
   { id: 'v-05', piece: 2, speed: 0.9 },
   { id: 'v-06', piece: 1, speed: 0.8 },
   { id: 'v-07', piece: 2, speed: 0.6 },
-  { id: 'v-room', piece: 3, speed: 0.3, isRoom: true },
+  { id: 'v-room', piece: roomIndex, speed: 0.3, isRoom: true },
   { id: 'v-08', piece: 0, speed: 1.1 },
   { id: 'v-09', piece: 1, speed: 0.7 },
   { id: 'v-10', piece: 2, speed: 0.5 },
@@ -924,7 +926,7 @@ function onModelSettled() {
 }
 
 function preloadModels() {
-  [0, 1, 2, 3].forEach((pi) => {
+  [0, 1, 2, roomIndex].forEach((pi) => {
     const piece = pieces[pi];
     gltfLoader.load(piece.model, (gltf) => {
       const model = gltf.scene;
@@ -982,7 +984,7 @@ preloadModels();
 
 let highestZ = 50;
 document.querySelectorAll('.fp').forEach(el => {
-  const isRoom = parseInt(el.dataset.piece) === 3;
+  const isRoom = el.dataset.piece === 'room';
   let isDragging = false;
   let dragMoved = false;
   let dragStartX, dragStartY, elStartX, elStartY;
@@ -1025,11 +1027,10 @@ document.querySelectorAll('.fp').forEach(el => {
   });
 
   el.addEventListener('dblclick', () => {
-    const pi = parseInt(el.dataset.piece);
-    if (pi === 3) {
-      openRoomModal(pi);
+    if (isRoom) {
+      openRoomModal(roomIndex);
     } else {
-      openModal(pi);
+      openModal(parseInt(el.dataset.piece));
     }
   });
 });
