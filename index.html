@@ -147,7 +147,7 @@
   .wall-title {
     position: absolute;
     top: 38px;
-    left: calc(25vw + 390px);
+    left: 70vw;
     transform: translateX(-50%);
     z-index: 50;
     font-family: 'Cormorant Garamond', serif;
@@ -360,6 +360,7 @@
     background: transparent;
     border: none;
     box-shadow: none;
+    z-index: 999 !important;
   }
   .fr-gold-gaudy .frame-img-wrap {
     position: relative;
@@ -625,66 +626,24 @@
 
   <!-- ====== LEFT of room ====== -->
 
-  <div class="fp fr-gold-thin shape-oval" data-piece="0" style="top: 10vh; left: -22vw; width: 220px;">
-    <div class="fp-shadow"></div>
-    <div class="mat mat-narrow">
-      <div class="vw" id="v-01" style="width:165px; height:165px;"></div>
-    </div>
-  </div>
-
-  <div class="fp fr-wood-dark" data-piece="2" style="top: 3vh; left: -8vw; width: 270px;">
-    <div class="fp-shadow"></div>
-    <div class="mat">
-      <div class="vw vw-tall" id="v-02"></div>
-    </div>
-  </div>
-
-  <div class="fp fr-black-chunky shape-circle" data-piece="1" style="top: 48vh; left: -20vw; width: 200px;">
-    <div class="fp-shadow"></div>
-    <div class="mat mat-narrow">
-      <div class="vw" id="v-03" style="width:145px; height:145px;"></div>
-    </div>
-  </div>
-
-  <div class="fp fr-vintage-gold shape-arch" data-piece="0" style="top: 36vh; left: -7vw; width: 250px;">
-    <div class="fp-shadow"></div>
-    <div class="mat mat-warm">
-      <div class="vw vw-tall" id="v-04"></div>
-    </div>
-  </div>
-
-  <div class="fp fr-black" data-piece="2" style="top: 18vh; left: 10vw; width: 175px;">
-    <div class="fp-shadow"></div>
-    <div class="mat mat-narrow">
-      <div class="vw" id="v-05" style="width:145px; height:145px;"></div>
-    </div>
-  </div>
-
-  <div class="fp fr-wood-rustic" data-piece="1" style="top: 2vh; left: 12vw; width: 220px;">
+  <div class="fp fr-wood-rustic" data-piece="1" style="top: 50vh; left: 5vw; width: 220px;">
     <div class="fp-shadow"></div>
     <div class="mat">
       <div class="vw vw-squat" id="v-06"></div>
     </div>
   </div>
 
-  <div class="fp fr-wood-natural" data-piece="0" style="top: 64vh; left: 8vw; width: 195px;">
+  <div class="fp fr-gold shape-oval" data-piece="3" style="top: 10vh; left: 2vw; width: 210px;">
     <div class="fp-shadow"></div>
-    <div class="mat mat-narrow mat-warm">
-      <div class="vw" id="v-08" style="width:150px; height:150px;"></div>
+    <div class="mat">
+      <div class="vw" id="v-03" style="width:165px; height:165px;"></div>
     </div>
   </div>
 
   <!-- ====== CENTER: the room ====== -->
 
-  <div class="fp fr-gold shape-oval" data-piece="2" style="top: 60vh; left: 17vw; width: 185px;">
-    <div class="fp-shadow"></div>
-    <div class="mat mat-narrow">
-      <div class="vw" id="v-07" style="width:130px; height:130px;"></div>
-    </div>
-  </div>
-
   <!-- === THE ROOM === -->
-  <div class="fp fr-gold-gaudy" data-piece="room" style="top: 8vh; left: 25vw; width: 780px;">
+  <div class="fp fr-gold-gaudy" data-piece="room" style="top: 8vh; left: calc(70vw - 390px); width: 780px;">
     <div class="fp-shadow"></div>
     <div class="frame-img-wrap">
       <img src="./models/ornate-frame.png" alt="frame" draggable="false">
@@ -694,75 +653,26 @@
     </div>
   </div>
 
-  <div class="fp fr-black-chunky shape-arch" data-piece="1" style="top: 62vh; left: 30vw; width: 210px;">
+  <div class="fp fr-black shape-circle" data-piece="4" style="top: 60vh; left: 115vw; width: 180px;">
     <div class="fp-shadow"></div>
     <div class="mat mat-narrow">
-      <div class="vw vw-tall" id="v-09"></div>
-    </div>
-  </div>
-
-  <div class="fp fr-gold-thin shape-circle" data-piece="2" style="top: 68vh; left: 50vw; width: 155px;">
-    <div class="fp-shadow"></div>
-    <div class="mat mat-narrow">
-      <div class="vw" id="v-10" style="width:110px; height:110px;"></div>
+      <div class="vw" id="v-05" style="width:130px; height:130px;"></div>
     </div>
   </div>
 
   <!-- ====== RIGHT of room ====== -->
 
-  <div class="fp fr-vintage-gold" data-piece="0" style="top: 4vh; left: 70vw; width: 280px;">
+  <div class="fp fr-vintage-gold" data-piece="0" style="top: 4vh; left: 108vw; width: 280px;">
     <div class="fp-shadow"></div>
     <div class="mat">
       <div class="vw" id="v-11"></div>
     </div>
   </div>
 
-  <div class="fp fr-wood-natural" data-piece="2" style="top: 6vh; left: 88vw; width: 300px;">
+  <div class="fp fr-wood-natural" data-piece="2" style="top: 40vh; left: 20vw; width: 300px;">
     <div class="fp-shadow"></div>
     <div class="mat mat-warm">
       <div class="vw vw-squat" id="v-12"></div>
-    </div>
-  </div>
-
-  <div class="fp fr-black" data-piece="1" style="top: 30vh; left: 72vw; width: 210px;">
-    <div class="fp-shadow"></div>
-    <div class="mat mat-narrow">
-      <div class="vw vw-tall" id="v-13"></div>
-    </div>
-  </div>
-
-  <div class="fp fr-wood-dark shape-oval" data-piece="2" style="top: 28vh; left: 90vw; width: 280px;">
-    <div class="fp-shadow"></div>
-    <div class="mat">
-      <div class="vw" id="v-14" style="width:210px; height:210px;"></div>
-    </div>
-  </div>
-
-  <div class="fp fr-gold" data-piece="0" style="top: 54vh; left: 80vw; width: 210px;">
-    <div class="fp-shadow"></div>
-    <div class="mat mat-narrow">
-      <div class="vw" id="v-15" style="width:160px; height:160px;"></div>
-    </div>
-  </div>
-
-  <div class="fp fr-wood-rustic shape-arch" data-piece="1" style="top: 2vh; left: 112vw; width: 230px;">
-    <div class="fp-shadow"></div>
-    <div class="mat">
-      <div class="vw vw-tall" id="v-16"></div>
-    </div>
-  </div>
-
-  <div class="fp fr-black-chunky" data-piece="0" style="top: 34vh; left: 114vw; width: 250px;">
-    <div class="fp-shadow"></div>
-    <div class="mat mat-warm">
-      <div class="vw vw-squat" id="v-17"></div>
-    </div>
-  </div>
-
-  <div class="fp fr-gold-thin shape-circle" data-piece="2" style="top: 60vh; left: 110vw; width: 175px;">
-    <div class="fp-shadow"></div>
-    <div class="mat mat-narrow">
-      <div class="vw" id="v-18" style="width:125px; height:125px;"></div>
     </div>
   </div>
 
@@ -802,7 +712,7 @@ const bar = document.getElementById('loading-bar');
 
 const MODAL_KEY = '__modal__';
 const ROOM_MODAL_KEY = '__room_modal__';
-const ROOM_LEFT_VW = 0.25;
+const ROOM_LEFT_VW = 0.7;
 const ROOM_FRAME_HALF_WIDTH = 390;
 
 let pieces = [];
@@ -818,25 +728,12 @@ const modelCache = new Map();
 let modelsLoaded = 0;
 
 const viewerConfigList = [
-  { id: 'v-01', piece: 0, speed: 0.8 },
-  { id: 'v-02', piece: 2, speed: 0.5 },
-  { id: 'v-03', piece: 1, speed: 1.0 },
-  { id: 'v-04', piece: 0, speed: 0.7 },
-  { id: 'v-05', piece: 2, speed: 0.9 },
+  { id: 'v-03', piece: 3, speed: 0.8 },
+  { id: 'v-05', piece: 4, speed: 0.9 },
   { id: 'v-06', piece: 1, speed: 0.8 },
-  { id: 'v-07', piece: 2, speed: 0.6 },
   { id: 'v-room', piece: roomIndex, speed: 0.3, isRoom: true },
-  { id: 'v-08', piece: 0, speed: 1.1 },
-  { id: 'v-09', piece: 1, speed: 0.7 },
-  { id: 'v-10', piece: 2, speed: 0.5 },
   { id: 'v-11', piece: 0, speed: 0.9 },
   { id: 'v-12', piece: 2, speed: 0.6 },
-  { id: 'v-13', piece: 1, speed: 0.8 },
-  { id: 'v-14', piece: 2, speed: 0.4 },
-  { id: 'v-15', piece: 0, speed: 1.0 },
-  { id: 'v-16', piece: 1, speed: 0.7 },
-  { id: 'v-17', piece: 0, speed: 0.6 },
-  { id: 'v-18', piece: 2, speed: 0.8 },
 ];
 const viewerConfigMap = new Map(viewerConfigList.map(c => [c.id, c]));
 
@@ -914,8 +811,8 @@ function teardownViewer(id) {
 
 function onModelSettled() {
   modelsLoaded++;
-  bar.style.width = (modelsLoaded / 4 * 100) + '%';
-  if (modelsLoaded === 4) {
+  bar.style.width = (modelsLoaded / 6 * 100) + '%';
+  if (modelsLoaded === 6) {
     setTimeout(() => {
       document.getElementById('loading-overlay').classList.add('hidden');
       initViewers();
@@ -926,7 +823,7 @@ function onModelSettled() {
 }
 
 function preloadModels() {
-  [0, 1, 2, roomIndex].forEach((pi) => {
+  [0, 1, 2, 3, 4, roomIndex].forEach((pi) => {
     const piece = pieces[pi];
     gltfLoader.load(piece.model, (gltf) => {
       const model = gltf.scene;
@@ -1142,18 +1039,21 @@ const scrollHint = document.getElementById('scroll-hint');
 let scrollFaded = false;
 
 function roomCenterX() {
-  return window.innerWidth * ROOM_LEFT_VW + ROOM_FRAME_HALF_WIDTH;
+  return window.innerWidth * ROOM_LEFT_VW;
 }
 
 function scrollToRoom() {
-  window.scrollTo({ left: roomCenterX() - window.innerWidth / 2, behavior: 'auto' });
+  const target = roomCenterX() - window.innerWidth / 2;
+  document.documentElement.scrollLeft = target;
+  document.body.scrollLeft = target;
 }
 
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
 }
-scrollToRoom();
-window.addEventListener('load', () => { scrollToRoom(); });
+window.addEventListener('load', () => {
+  setTimeout(() => { scrollToRoom(); }, 100);
+});
 
 let initialCenterScroll = null;
 window.addEventListener('scroll', () => {
