@@ -147,7 +147,7 @@
   .wall-title {
     position: absolute;
     top: 38px;
-    left: calc(25vw + 390px);
+    left: 70vw;
     transform: translateX(-50%);
     z-index: 50;
     font-family: 'Cormorant Garamond', serif;
@@ -626,14 +626,14 @@
 
   <!-- ====== LEFT of room ====== -->
 
-  <div class="fp fr-wood-rustic" data-piece="1" style="top: 2vh; left: 12vw; width: 220px;">
+  <div class="fp fr-wood-rustic" data-piece="1" style="top: 50vh; left: 5vw; width: 220px;">
     <div class="fp-shadow"></div>
     <div class="mat">
       <div class="vw vw-squat" id="v-06"></div>
     </div>
   </div>
 
-  <div class="fp fr-gold shape-oval" data-piece="3" style="top: 30vh; left: -5vw; width: 210px;">
+  <div class="fp fr-gold shape-oval" data-piece="3" style="top: 10vh; left: 2vw; width: 210px;">
     <div class="fp-shadow"></div>
     <div class="mat">
       <div class="vw" id="v-03" style="width:165px; height:165px;"></div>
@@ -653,7 +653,7 @@
     </div>
   </div>
 
-  <div class="fp fr-black shape-circle" data-piece="4" style="top: 60vh; left: 35vw; width: 180px;">
+  <div class="fp fr-black shape-circle" data-piece="4" style="top: 60vh; left: 115vw; width: 180px;">
     <div class="fp-shadow"></div>
     <div class="mat mat-narrow">
       <div class="vw" id="v-05" style="width:130px; height:130px;"></div>
@@ -662,14 +662,14 @@
 
   <!-- ====== RIGHT of room ====== -->
 
-  <div class="fp fr-vintage-gold" data-piece="0" style="top: 4vh; left: 70vw; width: 280px;">
+  <div class="fp fr-vintage-gold" data-piece="0" style="top: 4vh; left: 108vw; width: 280px;">
     <div class="fp-shadow"></div>
     <div class="mat">
       <div class="vw" id="v-11"></div>
     </div>
   </div>
 
-  <div class="fp fr-wood-natural" data-piece="2" style="top: 6vh; left: 88vw; width: 300px;">
+  <div class="fp fr-wood-natural" data-piece="2" style="top: 40vh; left: 20vw; width: 300px;">
     <div class="fp-shadow"></div>
     <div class="mat mat-warm">
       <div class="vw vw-squat" id="v-12"></div>
@@ -1039,18 +1039,21 @@ const scrollHint = document.getElementById('scroll-hint');
 let scrollFaded = false;
 
 function roomCenterX() {
-  return window.innerWidth * ROOM_LEFT_VW + ROOM_FRAME_HALF_WIDTH;
+  return window.innerWidth * ROOM_LEFT_VW;
 }
 
 function scrollToRoom() {
-  window.scrollTo({ left: roomCenterX() - window.innerWidth / 2, behavior: 'auto' });
+  const target = roomCenterX() - window.innerWidth / 2;
+  document.documentElement.scrollLeft = target;
+  document.body.scrollLeft = target;
 }
 
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
 }
-scrollToRoom();
-window.addEventListener('load', () => { scrollToRoom(); });
+window.addEventListener('load', () => {
+  setTimeout(() => { scrollToRoom(); }, 100);
+});
 
 let initialCenterScroll = null;
 window.addEventListener('scroll', () => {
