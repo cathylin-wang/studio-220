@@ -726,6 +726,7 @@ await loadPieces();
 
 const modelCache = new Map();
 let modelsLoaded = 0;
+const criticalModels = [0, 1];
 
 const viewerConfigList = [
   { id: 'v-03', piece: 3, speed: 0.8 },
@@ -811,8 +812,10 @@ function teardownViewer(id) {
 
 function onModelSettled() {
   modelsLoaded++;
-  bar.style.width = (modelsLoaded / 6 * 100) + '%';
-  if (modelsLoaded === 6) {
+  const totalModels = 6;
+  bar.style.width = (modelsLoaded / totalModels * 100) + '%';
+  // Show UI after critical models load (room + 2 nearby frames)
+  if (modelsLoaded === criticalModels.length + 1) {
     setTimeout(() => {
       document.getElementById('loading-overlay').classList.add('hidden');
       initViewers();
@@ -822,22 +825,29 @@ function onModelSettled() {
   }
 }
 
+function loadModel(pi) {
+  const piece = pieces[pi];
+  gltfLoader.load(piece.model, (gltf) => {
+    const model = gltf.scene;
+    const box = new THREE.Box3().setFromObject(model);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const scale = piece.targetSize / maxDim;
+    model.scale.setScalar(scale);
+    model.position.sub(center.multiplyScalar(scale));
+    modelCache.set(pi, model);
+    onModelSettled();
+  }, undefined, onModelSettled);
+}
+
 function preloadModels() {
-  [0, 1, 2, 3, 4, roomIndex].forEach((pi) => {
-    const piece = pieces[pi];
-    gltfLoader.load(piece.model, (gltf) => {
-      const model = gltf.scene;
-      const box = new THREE.Box3().setFromObject(model);
-      const center = box.getCenter(new THREE.Vector3());
-      const size = box.getSize(new THREE.Vector3());
-      const maxDim = Math.max(size.x, size.y, size.z);
-      const scale = piece.targetSize / maxDim;
-      model.scale.setScalar(scale);
-      model.position.sub(center.multiplyScalar(scale));
-      modelCache.set(pi, model);
-      onModelSettled();
-    }, undefined, onModelSettled);
-  });
+  // Load critical models first (room + nearby frames)
+  [roomIndex, ...criticalModels].forEach(pi => loadModel(pi));
+
+  // Load remaining models in background
+  const remaining = [0, 1, 2, 3, 4].filter(pi => !criticalModels.includes(pi) && pi !== roomIndex);
+  requestIdleCallback(() => remaining.forEach(pi => loadModel(pi)), { timeout: 2000 });
 }
 
 function initViewers() {
