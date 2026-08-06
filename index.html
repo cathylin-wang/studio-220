@@ -25,6 +25,7 @@
   }
 
   body {
+    width: 100%;
     height: 100vh;
     overflow-y: hidden;
     overflow-x: auto;
@@ -1088,7 +1089,11 @@ document.addEventListener('wheel', (e) => {
 // --- User identity & layout save/load ---
 
 function getUser() {
-  let user = localStorage.getItem('studio220_user');
+  return localStorage.getItem('studio220_user');
+}
+
+function getOrPromptUser() {
+  let user = getUser();
   if (!user) {
     user = prompt('Enter your name to save/load your layout:');
     if (user) {
@@ -1136,7 +1141,7 @@ async function loadLayout() {
 }
 
 async function saveLayout() {
-  const user = getUser();
+  const user = getOrPromptUser();
   if (!user) return;
   const btn = document.getElementById('save-btn');
   btn.classList.add('saving');
