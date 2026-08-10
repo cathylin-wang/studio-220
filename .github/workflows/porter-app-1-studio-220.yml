@@ -9,20 +9,18 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
-              with:
-                persist-credentials: false
             - name: Set Github tag
               id: vars
               run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
             - name: Setup porter
-              uses: porter-dev/setup-porter@v0.1.0
+              uses: porter-dev/setup-porter@v0.2.0
             - name: Deploy stack
               timeout-minutes: 30
               run: porter apply
               env:
                 PORTER_APP_NAME: studio-220
                 PORTER_CLUSTER: "1"
-                PORTER_DEPLOYMENT_TARGET_ID: 2b02a9f0-a210-43f1-b16a-844ae1fd60ab
+                PORTER_DEPLOYMENT_TARGET_ID: 18173212-44d7-444f-959d-c22d5503fd4f
                 PORTER_HOST: https://cathy.withporter.run
                 PORTER_PROJECT: "1"
                 PORTER_TAG: ${{ steps.vars.outputs.sha_short }}
